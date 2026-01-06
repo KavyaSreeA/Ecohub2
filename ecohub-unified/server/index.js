@@ -2,25 +2,32 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { v4 as uuidv4 } from 'uuid';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 
 dotenv.config();
 
+// Import routes
+import authRoutes from './routes/auth.js';
+import adminRoutes from './routes/admin.js';
+
+// Import database
+import db from './config/database.js';
+
 const app = express();
 const PORT = process.env.PORT || 4000;
-const JWT_SECRET = process.env.JWT_SECRET || 'ecohub-secret-key-2024';
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:3001', 'http://localhost:5173'],
+  credentials: true
+}));
 app.use(express.json());
 
-// ==================== IN-MEMORY DATABASE ====================
-const db = {
-  users: [
-    { id: '1', name: 'Demo User', email: 'demo@ecohub.com', password: '$2a$10$XQxBtN8xN8xN8xN8xN8xNeXQxBtN8xN8xN8xN8xN8xN8xN8xN8xN8', role: 'user' }
-  ],
-  
+// ==================== API ROUTES ====================
+app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
+
+// ==================== STATIC DATA (For backward compatibility during migration) ====================
+const staticData = {
   // Conservation Data
   campaigns: [
     { id: '1', title: 'Save the Amazon Rainforest', description: 'Protect 1 million acres of rainforest', goal: 100000, raised: 75000, image: 'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=400', category: 'forest', status: 'active' },
@@ -30,9 +37,9 @@ const db = {
   ],
   
   forumPosts: [
-    { id: '1', title: 'Tips for reducing plastic usage', message: 'Here are my top 10 tips for reducing plastic in daily life: 1. Carry reusable bags, 2. Use metal straws, 3. Buy in bulk, 4. Choose products with minimal packaging, 5. Use refillable water bottles, 6. Avoid single-use cutlery, 7. Shop at farmers markets, 8. Make your own cleaning products, 9. Choose bar soap over liquid, 10. Compost food waste.', author: 'EcoWarrior', likes: 45, comments: 12, createdAt: '2024-01-15' },
-    { id: '2', title: 'Local conservation groups in Seattle', message: 'Looking for volunteers to join our weekend cleanup initiatives! We meet every Saturday at 9 AM at Discovery Park. All ages welcome. We provide gloves and bags. Join us in making Seattle cleaner and greener!', author: 'GreenSeattle', likes: 23, comments: 8, createdAt: '2024-01-14' },
-    { id: '3', title: 'Success story: Community garden', message: 'Our neighborhood transformed an abandoned lot into a thriving community garden! In just 6 months, we now have 20 raised beds, a composting station, and regular workshops. The best part? Fresh vegetables for everyone and a stronger sense of community.', author: 'UrbanGardener', likes: 67, comments: 24, createdAt: '2024-01-13' }
+    { id: '1', title: 'Tips for reducing plastic usage', message: 'Here are my top 10 tips for reducing plastic in daily life...', author: 'EcoWarrior', likes: 45, comments: 12, createdAt: '2024-01-15' },
+    { id: '2', title: 'Local conservation groups in Seattle', message: 'Looking for volunteers to join our weekend cleanup initiatives!', author: 'GreenSeattle', likes: 23, comments: 8, createdAt: '2024-01-14' },
+    { id: '3', title: 'Success story: Community garden', message: 'Our neighborhood transformed an abandoned lot into a thriving community garden!', author: 'UrbanGardener', likes: 67, comments: 24, createdAt: '2024-01-13' }
   ],
   
   events: [
@@ -112,177 +119,262 @@ const db = {
   }
 };
 
-// ==================== AUTH MIDDLEWARE ====================
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  
-  if (!token) {
-    return res.status(401).json({ success: false, message: 'Access token required' });
-  }
-  
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ success: false, message: 'Invalid token' });
-    req.user = user;
-    next();
-  });
-};
-
-// ==================== AUTH ROUTES ====================
-app.post('/api/auth/register', async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
-    
-    if (db.users.find(u => u.email === email)) {
-      return res.status(400).json({ success: false, message: 'User already exists' });
-    }
-    
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = { id: uuidv4(), name, email, password: hashedPassword, role: 'user' };
-    db.users.push(user);
-    
-    const token = jwt.sign({ id: user.id, email: user.email, name: user.name }, JWT_SECRET, { expiresIn: '7d' });
-    res.json({ success: true, token, user: { id: user.id, name: user.name, email: user.email } });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Registration failed' });
-  }
-});
-
-app.post('/api/auth/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    let user = db.users.find(u => u.email === email);
-    
-    if (!user) {
-      // For demo purposes, auto-create user on login
-      user = { id: uuidv4(), name: email.split('@')[0], email, password: '', role: 'user' };
-      db.users.push(user);
-    }
-    
-    // For demo, accept any password for existing users
-    const token = jwt.sign({ id: user.id, email: user.email, name: user.name }, JWT_SECRET, { expiresIn: '7d' });
-    res.json({ success: true, token, user: { id: user.id, name: user.name, email: user.email } });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Login failed' });
-  }
-});
-
-// Verify token endpoint
-app.get('/api/auth/verify', (req, res) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  
-  if (!token) {
-    return res.status(401).json({ success: false, message: 'No token provided' });
-  }
-  
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    res.json({ success: true, user: { id: decoded.id, email: decoded.email, name: decoded.name } });
-  } catch (error) {
-    res.status(401).json({ success: false, message: 'Invalid token' });
-  }
-});
-
 // ==================== CONSERVATION ROUTES ====================
-app.get('/api/conservation/campaigns', (req, res) => {
-  res.json(db.campaigns);
+app.get('/api/conservation/campaigns', async (req, res) => {
+  try {
+    const [campaigns] = await db.query('SELECT * FROM campaigns WHERE status = "approved"');
+    if (campaigns.length === 0) {
+      res.json(staticData.campaigns);
+    } else {
+      res.json(campaigns);
+    }
+  } catch (error) {
+    res.json(staticData.campaigns);
+  }
 });
 
-app.get('/api/conservation/campaigns/:id', (req, res) => {
-  const campaign = db.campaigns.find(c => c.id === req.params.id);
-  if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
-  res.json(campaign);
+app.get('/api/conservation/campaigns/:id', async (req, res) => {
+  try {
+    const [campaigns] = await db.query('SELECT * FROM campaigns WHERE id = ?', [req.params.id]);
+    if (campaigns.length === 0) {
+      const campaign = staticData.campaigns.find(c => c.id === req.params.id);
+      if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
+      res.json(campaign);
+    } else {
+      res.json(campaigns[0]);
+    }
+  } catch (error) {
+    const campaign = staticData.campaigns.find(c => c.id === req.params.id);
+    if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
+    res.json(campaign);
+  }
 });
 
-app.get('/api/conservation/forum', (req, res) => {
-  res.json(db.forumPosts);
+app.get('/api/conservation/forum', async (req, res) => {
+  try {
+    const [posts] = await db.query('SELECT * FROM forum_posts WHERE status = "approved" ORDER BY created_at DESC');
+    if (posts.length === 0) {
+      res.json(staticData.forumPosts);
+    } else {
+      res.json(posts);
+    }
+  } catch (error) {
+    res.json(staticData.forumPosts);
+  }
 });
 
-app.get('/api/conservation/events', (req, res) => {
-  res.json(db.events);
+app.get('/api/conservation/events', async (req, res) => {
+  try {
+    const [events] = await db.query('SELECT * FROM events WHERE status = "approved" ORDER BY event_date ASC');
+    if (events.length === 0) {
+      res.json(staticData.events);
+    } else {
+      res.json(events);
+    }
+  } catch (error) {
+    res.json(staticData.events);
+  }
 });
 
-app.get('/api/conservation/stats', (req, res) => {
-  res.json({
-    totalCampaigns: db.campaigns.length,
-    totalRaised: db.campaigns.reduce((sum, c) => sum + c.raised, 0),
-    activeEvents: db.events.length,
-    forumPosts: db.forumPosts.length
-  });
+app.get('/api/conservation/stats', async (req, res) => {
+  try {
+    const [[stats]] = await db.query(`
+      SELECT 
+        (SELECT COUNT(*) FROM campaigns WHERE status = 'approved') as totalCampaigns,
+        (SELECT COALESCE(SUM(current_amount), 0) FROM campaigns) as totalRaised,
+        (SELECT COUNT(*) FROM events WHERE status = 'approved') as activeEvents,
+        (SELECT COUNT(*) FROM forum_posts WHERE status = 'approved') as forumPosts
+    `);
+    res.json(stats);
+  } catch (error) {
+    res.json({
+      totalCampaigns: staticData.campaigns.length,
+      totalRaised: staticData.campaigns.reduce((sum, c) => sum + c.raised, 0),
+      activeEvents: staticData.events.length,
+      forumPosts: staticData.forumPosts.length
+    });
+  }
 });
 
 // ==================== RENEWABLE ENERGY ROUTES ====================
 app.get('/api/energy/sources', (req, res) => {
-  res.json(db.energySources);
+  res.json(staticData.energySources);
 });
 
 app.get('/api/energy/projects', (req, res) => {
-  res.json(db.energyProjects);
+  res.json(staticData.energyProjects);
 });
 
 app.get('/api/energy/stats', (req, res) => {
-  res.json(db.energyStats);
+  res.json(staticData.energyStats);
+});
+
+app.get('/api/energy/providers', async (req, res) => {
+  try {
+    const [providers] = await db.query('SELECT * FROM energy_providers WHERE is_active = 1');
+    res.json(providers);
+  } catch (error) {
+    res.json([]);
+  }
 });
 
 // ==================== TRANSPORT ROUTES ====================
 app.get('/api/transport/routes', (req, res) => {
-  res.json(db.routes);
+  res.json(staticData.routes);
 });
 
-app.get('/api/transport/vehicles', (req, res) => {
-  res.json(db.vehicles);
+app.get('/api/transport/vehicles', async (req, res) => {
+  try {
+    const [vehicles] = await db.query('SELECT * FROM vehicles WHERE is_active = 1');
+    if (vehicles.length === 0) {
+      res.json(staticData.vehicles);
+    } else {
+      res.json(vehicles);
+    }
+  } catch (error) {
+    res.json(staticData.vehicles);
+  }
 });
 
-app.get('/api/transport/stats', (req, res) => {
-  res.json(db.transportStats);
+app.get('/api/transport/stats', async (req, res) => {
+  try {
+    const [[stats]] = await db.query(`
+      SELECT 
+        (SELECT COUNT(*) FROM rides) as totalRides,
+        (SELECT COALESCE(SUM(carbon_saved), 0) FROM rides) as co2Saved,
+        (SELECT COUNT(DISTINCT user_id) FROM rides) as activeUsers
+    `);
+    res.json({
+      ...staticData.transportStats,
+      ...stats
+    });
+  } catch (error) {
+    res.json(staticData.transportStats);
+  }
 });
 
 // ==================== WASTE EXCHANGE ROUTES ====================
-app.get('/api/waste/listings', (req, res) => {
-  res.json(db.wasteListings);
+app.get('/api/waste/listings', async (req, res) => {
+  try {
+    const [listings] = await db.query('SELECT * FROM waste_listings WHERE status = "available" ORDER BY created_at DESC');
+    if (listings.length === 0) {
+      res.json(staticData.wasteListings);
+    } else {
+      res.json(listings);
+    }
+  } catch (error) {
+    res.json(staticData.wasteListings);
+  }
 });
 
 app.get('/api/waste/categories', (req, res) => {
-  res.json(db.wasteCategories);
+  res.json(staticData.wasteCategories);
 });
 
-app.get('/api/waste/stats', (req, res) => {
-  res.json(db.wasteStats);
+app.get('/api/waste/stats', async (req, res) => {
+  try {
+    const [[stats]] = await db.query(`
+      SELECT 
+        (SELECT COUNT(*) FROM waste_listings) as totalListings,
+        (SELECT COUNT(DISTINCT user_id) FROM waste_listings) as activeSellers
+    `);
+    res.json({
+      ...staticData.wasteStats,
+      ...stats
+    });
+  } catch (error) {
+    res.json(staticData.wasteStats);
+  }
 });
 
-app.post('/api/waste/listings', (req, res) => {
-  const listing = { id: uuidv4(), ...req.body, status: 'available' };
-  db.wasteListings.push(listing);
-  res.status(201).json(listing);
+app.post('/api/waste/listings', async (req, res) => {
+  try {
+    const { title, category, quantity, location, price, description } = req.body;
+    const [result] = await db.query(
+      'INSERT INTO waste_listings (title, category, quantity, unit, location, price, description, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [title, category, quantity, 'kg', location, price, description, 'available']
+    );
+    res.status(201).json({ id: result.insertId, ...req.body, status: 'available' });
+  } catch (error) {
+    const listing = { id: uuidv4(), ...req.body, status: 'available' };
+    staticData.wasteListings.push(listing);
+    res.status(201).json(listing);
+  }
 });
 
 // ==================== HEALTH CHECK ====================
-app.get('/api/health', (req, res) => {
+app.get('/api/health', async (req, res) => {
+  let dbStatus = 'disconnected';
+  try {
+    await db.query('SELECT 1');
+    dbStatus = 'connected';
+  } catch (error) {
+    dbStatus = 'error';
+  }
+  
   res.json({ 
     status: 'healthy', 
     timestamp: new Date().toISOString(),
+    database: dbStatus,
     services: {
       conservation: 'active',
       energy: 'active',
       transport: 'active',
-      waste: 'active'
+      waste: 'active',
+      auth: 'active',
+      admin: 'active'
     }
   });
 });
 
 // ==================== DASHBOARD STATS ====================
-app.get('/api/dashboard/stats', (req, res) => {
-  res.json({
-    conservation: {
-      campaigns: db.campaigns.length,
-      raised: db.campaigns.reduce((sum, c) => sum + c.raised, 0),
-      events: db.events.length
-    },
-    energy: db.energyStats,
-    transport: db.transportStats,
-    waste: db.wasteStats
+app.get('/api/dashboard/stats', async (req, res) => {
+  try {
+    const [[userStats]] = await db.query(`
+      SELECT 
+        (SELECT COUNT(*) FROM users WHERE status = 'active') as totalUsers,
+        (SELECT COUNT(*) FROM users WHERE role = 'business') as totalBusinesses,
+        (SELECT COUNT(*) FROM users WHERE role = 'community') as totalCommunities
+    `);
+    
+    res.json({
+      users: userStats,
+      conservation: {
+        campaigns: staticData.campaigns.length,
+        raised: staticData.campaigns.reduce((sum, c) => sum + c.raised, 0),
+        events: staticData.events.length
+      },
+      energy: staticData.energyStats,
+      transport: staticData.transportStats,
+      waste: staticData.wasteStats
+    });
+  } catch (error) {
+    res.json({
+      conservation: {
+        campaigns: staticData.campaigns.length,
+        raised: staticData.campaigns.reduce((sum, c) => sum + c.raised, 0),
+        events: staticData.events.length
+      },
+      energy: staticData.energyStats,
+      transport: staticData.transportStats,
+      waste: staticData.wasteStats
+    });
+  }
+});
+
+// ==================== ERROR HANDLING ====================
+app.use((err, req, res, next) => {
+  console.error('Server Error:', err);
+  res.status(500).json({ 
+    success: false, 
+    message: 'Internal server error',
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined
   });
+});
+
+// 404 Handler
+app.use((req, res) => {
+  res.status(404).json({ success: false, message: 'Route not found' });
 });
 
 // Start server
@@ -294,10 +386,13 @@ app.listen(PORT, () => {
   console.log(`   🚀 Server running on: http://localhost:${PORT}`);
   console.log(`   📊 Health check: http://localhost:${PORT}/api/health`);
   console.log('   ✅ All microservices integrated:');
+  console.log('      • Authentication API (JWT + Roles)');
+  console.log('      • Admin Management API');
   console.log('      • Conservation API');
   console.log('      • Renewable Energy API');
   console.log('      • Sustainable Transport API');
   console.log('      • Waste Exchange API');
+  console.log('   📦 Database: MySQL (with fallback to static data)');
   console.log('═══════════════════════════════════════════════════════════════');
   console.log('');
 });
