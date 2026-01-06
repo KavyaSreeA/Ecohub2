@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { Sprout, TreePine, Users, BarChart3 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const HomePage = () => {
@@ -41,11 +42,21 @@ const HomePage = () => {
   ];
 
   const impactStats = [
-    { value: '2.5M', label: 'Tons CO₂ Reduced', icon: '🌱' },
-    { value: '500K', label: 'Trees Planted', icon: '🌳' },
-    { value: '100K', label: 'Active Members', icon: '👥' },
-    { value: '1,200', label: 'Active Projects', icon: '📊' }
+    { value: '2.5M', label: 'Tons CO₂ Reduced', icon: 'sprout' },
+    { value: '500K', label: 'Trees Planted', icon: 'tree' },
+    { value: '100K', label: 'Active Members', icon: 'users' },
+    { value: '1,200', label: 'Active Projects', icon: 'chart' }
   ];
+
+  const getIcon = (iconName: string) => {
+    switch (iconName) {
+      case 'sprout': return <Sprout className="w-10 h-10 text-primary-500" />;
+      case 'tree': return <TreePine className="w-10 h-10 text-primary-500" />;
+      case 'users': return <Users className="w-10 h-10 text-primary-500" />;
+      case 'chart': return <BarChart3 className="w-10 h-10 text-primary-500" />;
+      default: return null;
+    }
+  };
 
   return (
     <div className="bg-cream">
@@ -112,7 +123,7 @@ const HomePage = () => {
                 transition={{ delay: index * 0.1 }}
                 className="text-center"
               >
-                <span className="text-4xl mb-3 block">{stat.icon}</span>
+                <div className="flex justify-center mb-3">{getIcon(stat.icon)}</div>
                 <div className="font-serif text-4xl md:text-5xl font-semibold text-primary-600 mb-2">
                   {stat.value}
                 </div>

@@ -4,8 +4,13 @@ import dotenv from 'dotenv';
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -14,6 +19,11 @@ const JWT_SECRET = process.env.JWT_SECRET || 'ecohub-secret-key-2024';
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Serve static files in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../dist')));
+}
 
 // ==================== IN-MEMORY DATABASE ====================
 const db = {
@@ -43,10 +53,10 @@ const db = {
 
   // Renewable Energy Data
   energySources: [
-    { id: '1', name: 'Solar Power', icon: '☀️', description: 'Harness the power of the sun', capacity: '500 MW', growth: '+15%' },
-    { id: '2', name: 'Wind Energy', icon: '💨', description: 'Clean energy from wind turbines', capacity: '350 MW', growth: '+22%' },
-    { id: '3', name: 'Hydroelectric', icon: '💧', description: 'Power from flowing water', capacity: '800 MW', growth: '+8%' },
-    { id: '4', name: 'Geothermal', icon: '🌋', description: 'Earth\'s natural heat', capacity: '150 MW', growth: '+12%' }
+    { id: '1', name: 'Solar Power', icon: 'sun', description: 'Harness the power of the sun', capacity: '500 MW', growth: '+15%' },
+    { id: '2', name: 'Wind Energy', icon: 'wind', description: 'Clean energy from wind turbines', capacity: '350 MW', growth: '+22%' },
+    { id: '3', name: 'Hydroelectric', icon: 'droplets', description: 'Power from flowing water', capacity: '800 MW', growth: '+8%' },
+    { id: '4', name: 'Geothermal', icon: 'flame', description: 'Earth\'s natural heat', capacity: '150 MW', growth: '+12%' }
   ],
   
   energyProjects: [
@@ -72,10 +82,10 @@ const db = {
   ],
   
   vehicles: [
-    { id: '1', type: 'Electric Bus', count: 150, co2Reduction: '85%', image: '🚌' },
-    { id: '2', type: 'E-Bikes', count: 500, co2Reduction: '100%', image: '🚲' },
-    { id: '3', type: 'Electric Cars', count: 200, co2Reduction: '90%', image: '🚗' },
-    { id: '4', type: 'Metro Trains', count: 50, co2Reduction: '95%', image: '🚇' }
+    { id: '1', type: 'Electric Bus', count: 150, co2Reduction: '85%', image: 'bus' },
+    { id: '2', type: 'E-Bikes', count: 500, co2Reduction: '100%', image: 'bike' },
+    { id: '3', type: 'Electric Cars', count: 200, co2Reduction: '90%', image: 'car' },
+    { id: '4', type: 'Metro Trains', count: 50, co2Reduction: '95%', image: 'train' }
   ],
 
   transportStats: {
@@ -87,21 +97,21 @@ const db = {
 
   // Waste Exchange Data
   wasteListings: [
-    { id: '1', title: 'Recyclable Cardboard Boxes', category: 'paper', quantity: '50 kg', location: 'Brooklyn, NY', seller: 'PackageCo', price: 'Free', image: '📦', status: 'available' },
-    { id: '2', title: 'Scrap Metal - Aluminum', category: 'metal', quantity: '100 kg', location: 'Newark, NJ', seller: 'MetalWorks', price: '$150', image: '🔩', status: 'available' },
-    { id: '3', title: 'Organic Compost Material', category: 'organic', quantity: '200 kg', location: 'Queens, NY', seller: 'GreenFarm', price: '$50', image: '🌱', status: 'available' },
-    { id: '4', title: 'Electronic Waste - Computers', category: 'e-waste', quantity: '25 units', location: 'Manhattan, NY', seller: 'TechRecycle', price: 'Free pickup', image: '💻', status: 'available' },
-    { id: '5', title: 'Glass Bottles - Clear', category: 'glass', quantity: '80 kg', location: 'Hoboken, NJ', seller: 'BottleCo', price: '$30', image: '🍾', status: 'available' },
-    { id: '6', title: 'Plastic Containers', category: 'plastic', quantity: '60 kg', location: 'Bronx, NY', seller: 'CleanPlastic', price: 'Free', image: '🥤', status: 'pending' }
+    { id: '1', title: 'Recyclable Cardboard Boxes', category: 'paper', quantity: '50 kg', location: 'Brooklyn, NY', seller: 'PackageCo', price: 'Free', image: 'package', status: 'available' },
+    { id: '2', title: 'Scrap Metal - Aluminum', category: 'metal', quantity: '100 kg', location: 'Newark, NJ', seller: 'MetalWorks', price: '$150', image: 'wrench', status: 'available' },
+    { id: '3', title: 'Organic Compost Material', category: 'organic', quantity: '200 kg', location: 'Queens, NY', seller: 'GreenFarm', price: '$50', image: 'sprout', status: 'available' },
+    { id: '4', title: 'Electronic Waste - Computers', category: 'e-waste', quantity: '25 units', location: 'Manhattan, NY', seller: 'TechRecycle', price: 'Free pickup', image: 'laptop', status: 'available' },
+    { id: '5', title: 'Glass Bottles - Clear', category: 'glass', quantity: '80 kg', location: 'Hoboken, NJ', seller: 'BottleCo', price: '$30', image: 'wine', status: 'available' },
+    { id: '6', title: 'Plastic Containers', category: 'plastic', quantity: '60 kg', location: 'Bronx, NY', seller: 'CleanPlastic', price: 'Free', image: 'cup-soda', status: 'pending' }
   ],
 
   wasteCategories: [
-    { id: '1', name: 'Paper & Cardboard', icon: '📄', count: 156 },
-    { id: '2', name: 'Metals', icon: '🔧', count: 89 },
-    { id: '3', name: 'Plastics', icon: '♻️', count: 234 },
-    { id: '4', name: 'Electronics', icon: '📱', count: 67 },
-    { id: '5', name: 'Organic', icon: '🌿', count: 178 },
-    { id: '6', name: 'Glass', icon: '🫙', count: 92 }
+    { id: '1', name: 'Paper & Cardboard', icon: 'file-text', count: 156 },
+    { id: '2', name: 'Metals', icon: 'wrench', count: 89 },
+    { id: '3', name: 'Plastics', icon: 'recycle', count: 234 },
+    { id: '4', name: 'Electronics', icon: 'smartphone', count: 67 },
+    { id: '5', name: 'Organic', icon: 'leaf', count: 178 },
+    { id: '6', name: 'Glass', icon: 'flask-conical', count: 92 }
   ],
 
   wasteStats: {
@@ -257,6 +267,72 @@ app.post('/api/waste/listings', (req, res) => {
   res.status(201).json(listing);
 });
 
+// ==================== SOLAR CALCULATOR (AI Mock) ====================
+app.post('/api/energy/solar-calculate', (req, res) => {
+  const { rooftopArea, monthlyBill, roofType, sunlightExposure, location } = req.body;
+  
+  // Solar calculation constants
+  const COST_PER_WATT = 45;
+  const PANEL_WATTAGE = 400;
+  const PANEL_SIZE_SQFT = 18;
+  const ELECTRICITY_RATE = 8;
+  const SYSTEM_EFFICIENCY = 0.85;
+  const SUBSIDY_PERCENT = 0.40;
+  const CO2_OFFSET_PER_KWH = 0.82;
+  
+  const roofEfficiency = { flat: 0.90, sloped: 1.0, metal: 0.95, tile: 0.85, complex: 0.75 };
+  const sunHours = { excellent: 6.5, good: 5.5, moderate: 4.5, limited: 3.5 };
+  
+  const efficiency = roofEfficiency[roofType] || 0.9;
+  const hours = sunHours[sunlightExposure] || 5.5;
+  
+  // Calculate system requirements
+  const monthlyConsumption = monthlyBill / ELECTRICITY_RATE;
+  const dailyConsumption = monthlyConsumption / 30;
+  const effectiveSunHours = hours * efficiency * SYSTEM_EFFICIENCY;
+  const requiredKw = dailyConsumption / effectiveSunHours;
+  
+  const panelsNeeded = Math.ceil((requiredKw * 1000) / PANEL_WATTAGE);
+  const maxPanels = Math.floor(rooftopArea / PANEL_SIZE_SQFT);
+  const finalPanels = Math.min(panelsNeeded, maxPanels);
+  const systemKw = (finalPanels * PANEL_WATTAGE) / 1000;
+  
+  // Costs
+  const equipmentCost = systemKw * 1000 * COST_PER_WATT;
+  const installationCost = equipmentCost * 0.15;
+  const totalCost = equipmentCost + installationCost;
+  const subsidyAmount = totalCost * SUBSIDY_PERCENT;
+  const netCost = totalCost - subsidyAmount;
+  
+  // Savings
+  const dailyGeneration = systemKw * effectiveSunHours;
+  const monthlyGeneration = dailyGeneration * 30;
+  const monthlySavings = Math.min(monthlyGeneration, monthlyConsumption) * ELECTRICITY_RATE;
+  const annualSavings = monthlySavings * 12 - 5000;
+  const paybackYears = netCost / annualSavings;
+  
+  // Environmental
+  const annualCo2Offset = monthlyGeneration * 12 * CO2_OFFSET_PER_KWH;
+  
+  res.json({
+    success: true,
+    aiModel: 'ecohub-solar-advisor-v1',
+    result: {
+      recommendedPanels: finalPanels,
+      systemSizeKw: Math.round(systemKw * 100) / 100,
+      totalCost: Math.round(totalCost),
+      subsidyAmount: Math.round(subsidyAmount),
+      netCost: Math.round(netCost),
+      monthlyGeneration: Math.round(monthlyGeneration),
+      monthlySavings: Math.round(monthlySavings),
+      annualSavings: Math.round(annualSavings),
+      paybackPeriodYears: Math.round(paybackYears * 10) / 10,
+      annualCo2Offset: Math.round(annualCo2Offset),
+      suitabilityScore: Math.min(100, 70 + (efficiency * 20) + (hours > 5 ? 10 : 0))
+    }
+  });
+});
+
 // ==================== HEALTH CHECK ====================
 app.get('/api/health', (req, res) => {
   res.json({ 
@@ -266,7 +342,8 @@ app.get('/api/health', (req, res) => {
       conservation: 'active',
       energy: 'active',
       transport: 'active',
-      waste: 'active'
+      waste: 'active',
+      solarCalculator: 'active'
     }
   });
 });
@@ -285,19 +362,28 @@ app.get('/api/dashboard/stats', (req, res) => {
   });
 });
 
+// ==================== SPA CATCH-ALL ROUTE ====================
+// Serve React app for all non-API routes in production
+if (process.env.NODE_ENV === 'production') {
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../dist/index.html'));
+  });
+}
+
 // Start server
 app.listen(PORT, () => {
   console.log('');
-  console.log('🌿 ═══════════════════════════════════════════════════════════');
+  console.log('═══════════════════════════════════════════════════════════════');
   console.log('   EcoHub Unified Platform - Backend Server');
   console.log('═══════════════════════════════════════════════════════════════');
-  console.log(`   🚀 Server running on: http://localhost:${PORT}`);
-  console.log(`   📊 Health check: http://localhost:${PORT}/api/health`);
-  console.log('   ✅ All microservices integrated:');
-  console.log('      • Conservation API');
-  console.log('      • Renewable Energy API');
-  console.log('      • Sustainable Transport API');
-  console.log('      • Waste Exchange API');
+  console.log(`   Server running on: http://localhost:${PORT}`);
+  console.log(`   Health check: http://localhost:${PORT}/api/health`);
+  console.log(`   Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log('   All microservices integrated:');
+  console.log('      - Conservation API');
+  console.log('      - Renewable Energy API');
+  console.log('      - Sustainable Transport API');
+  console.log('      - Waste Exchange API');
   console.log('═══════════════════════════════════════════════════════════════');
   console.log('');
 });

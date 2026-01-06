@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { TreePine, Zap, Bus, Recycle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 interface DashboardStats {
@@ -53,7 +54,7 @@ const Dashboard = () => {
   const serviceCards = [
     {
       title: 'Conservation',
-      icon: '🌲',
+      icon: 'tree',
       path: '/conservation',
       image: 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=400&q=80',
       stats: stats ? [
@@ -64,7 +65,7 @@ const Dashboard = () => {
     },
     {
       title: 'Renewable Energy',
-      icon: '⚡',
+      icon: 'zap',
       path: '/energy',
       image: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=400&q=80',
       stats: stats ? [
@@ -75,7 +76,7 @@ const Dashboard = () => {
     },
     {
       title: 'Transport',
-      icon: '🚌',
+      icon: 'bus',
       path: '/transport',
       image: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=400&q=80',
       stats: stats ? [
@@ -86,7 +87,7 @@ const Dashboard = () => {
     },
     {
       title: 'Waste Exchange',
-      icon: '♻️',
+      icon: 'recycle',
       path: '/waste',
       image: 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=400&q=80',
       stats: stats ? [
@@ -96,6 +97,16 @@ const Dashboard = () => {
       ] : []
     }
   ];
+
+  const getServiceIcon = (iconName: string) => {
+    switch (iconName) {
+      case 'tree': return <TreePine className="w-8 h-8 text-primary-600" />;
+      case 'zap': return <Zap className="w-8 h-8 text-yellow-500" />;
+      case 'bus': return <Bus className="w-8 h-8 text-blue-500" />;
+      case 'recycle': return <Recycle className="w-8 h-8 text-green-500" />;
+      default: return null;
+    }
+  };
 
   if (authLoading || loading) {
     return (
@@ -180,8 +191,8 @@ const Dashboard = () => {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-charcoal/70 to-transparent flex items-end">
-                      <div className="p-6 text-white">
-                        <span className="text-3xl mr-3">{service.icon}</span>
+                      <div className="p-6 text-white flex items-center">
+                        <span className="mr-3">{getServiceIcon(service.icon)}</span>
                         <span className="text-2xl font-serif font-semibold">{service.title}</span>
                       </div>
                     </div>

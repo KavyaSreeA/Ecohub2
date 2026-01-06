@@ -1,7 +1,20 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Zap, Sun, Wind, Droplets, Flame } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+
+// Helper function to render energy source icons
+const getEnergyIcon = (iconName: string) => {
+  const iconClass = "w-8 h-8";
+  switch (iconName) {
+    case 'sun': return <Sun className={`${iconClass} text-yellow-500`} />;
+    case 'wind': return <Wind className={`${iconClass} text-blue-500`} />;
+    case 'droplets': return <Droplets className={`${iconClass} text-blue-400`} />;
+    case 'flame': return <Flame className={`${iconClass} text-orange-500`} />;
+    default: return <Zap className={`${iconClass} text-yellow-500`} />;
+  }
+};
 
 interface EnergySource {
   id: string;
@@ -92,7 +105,7 @@ const EnergyPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <span className="text-5xl mb-4 block">⚡</span>
+              <Zap className="w-12 h-12 text-yellow-400 mb-4" />
               <h1 className="text-5xl font-serif font-semibold text-white mb-4">Renewable Energy</h1>
               <p className="text-xl text-gray-200 max-w-2xl">
                 Track clean energy projects powering homes and businesses worldwide with solar, wind, and hydro.
@@ -163,7 +176,7 @@ const EnergyPage = () => {
                 />
               </div>
               <div className="p-5">
-                <div className="text-3xl mb-2">{source.icon}</div>
+                <div className="mb-2">{getEnergyIcon(source.icon)}</div>
                 <h3 className="text-lg font-serif font-semibold text-charcoal">{source.name}</h3>
                 <p className="text-sm text-gray-500 mb-3 line-clamp-2">{source.description}</p>
                 <div className="flex justify-between text-sm mb-3">
@@ -185,11 +198,19 @@ const EnergyPage = () => {
         <div className="mt-10 bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl p-8 text-white text-center">
           <h3 className="text-2xl font-serif font-semibold mb-2">Start Your Clean Energy Journey</h3>
           <p className="text-primary-100 mb-6">Calculate your energy savings and find the best renewable options for your home.</p>
-          <button 
-            onClick={handleGetStarted}
-            disabled={isLoading}
-            className="bg-white text-primary-600 px-8 py-3 rounded-full font-medium hover:bg-primary-50 transition-colors disabled:opacity-50"
-          >
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button 
+              onClick={() => navigate('/energy/calculator')}
+              className="bg-yellow-400 text-charcoal px-8 py-3 rounded-full font-medium hover:bg-yellow-300 transition-colors flex items-center justify-center space-x-2"
+            >
+              <Sun className="w-5 h-5" />
+              <span>Solar Calculator</span>
+            </button>
+            <button 
+              onClick={handleGetStarted}
+              disabled={isLoading}
+              className="bg-white text-primary-600 px-8 py-3 rounded-full font-medium hover:bg-primary-50 transition-colors disabled:opacity-50"
+            >
             {isLoading ? (
               <span className="flex items-center justify-center">
                 <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-primary-600" fill="none" viewBox="0 0 24 24">
@@ -202,6 +223,7 @@ const EnergyPage = () => {
               'Get Started →'
             )}
           </button>
+          </div>
         </div>
       </div>
 

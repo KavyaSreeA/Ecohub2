@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { Globe } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -9,7 +10,7 @@ const Footer = () => {
           <div className="lg:col-span-1">
             <Link to="/" className="flex items-center space-x-3 mb-6">
               <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-xl">🌍</span>
+                <Globe className="w-5 h-5 text-white" />
               </div>
               <span className="text-2xl font-serif font-semibold text-charcoal">EcoHub</span>
             </Link>

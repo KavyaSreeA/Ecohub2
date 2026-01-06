@@ -14,6 +14,7 @@ import RegisterPage from './pages/RegisterPage';
 import ProfilePage from './pages/ProfilePage';
 import PaymentPage from './pages/PaymentPage';
 import EventDetailPage from './pages/EventDetailPage';
+import SolarCalculatorPage from './pages/SolarCalculatorPage';
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
               <Route path="/payment" element={<PaymentPage />} />
               <Route path="/event" element={<EventDetailPage />} />
               <Route path="/energy" element={<EnergyPage />} />
+              <Route path="/energy/calculator" element={<SolarCalculatorPage />} />
               <Route path="/energy/contact" element={<EnergyContactPage />} />
               <Route path="/transport" element={<TransportPage />} />
               <Route path="/waste" element={<WastePage />} />

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { User, TreePine, Zap, Bus, Recycle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const ProfilePage = () => {
@@ -41,8 +42,8 @@ const ProfilePage = () => {
             <div className="relative px-8 pb-8">
               <div className="flex flex-col sm:flex-row sm:items-end sm:space-x-6">
                 <div className="-mt-16 relative">
-                  <div className="w-32 h-32 bg-white rounded-full border-4 border-white shadow-lg flex items-center justify-center text-5xl">
-                    {user.avatar || '👤'}
+                  <div className="w-32 h-32 bg-white rounded-full border-4 border-white shadow-lg flex items-center justify-center">
+                    {user.avatar ? <img src={user.avatar} alt="" className="w-full h-full rounded-full object-cover" /> : <User className="w-16 h-16 text-gray-400" />}
                   </div>
                 </div>
                 <div className="mt-6 sm:mt-0 sm:flex-1 sm:min-w-0 sm:flex sm:items-center sm:justify-between sm:space-x-6 sm:pb-1">
@@ -126,28 +127,28 @@ const ProfilePage = () => {
             <h2 className="text-xl font-serif font-semibold text-charcoal mb-6">Recent Activity</h2>
             <div className="space-y-4">
               <div className="flex items-center p-4 bg-primary-50 rounded-xl border border-primary-100">
-                <span className="text-2xl mr-4">🌲</span>
+                <TreePine className="w-6 h-6 text-green-600 mr-4" />
                 <div className="flex-1">
                   <p className="font-medium text-charcoal">Joined "Save the Rainforest" campaign</p>
                   <p className="text-sm text-gray-500">Conservation • 2 days ago</p>
                 </div>
               </div>
               <div className="flex items-center p-4 bg-primary-50 rounded-xl border border-primary-100">
-                <span className="text-2xl mr-4">⚡</span>
+                <Zap className="w-6 h-6 text-yellow-500 mr-4" />
                 <div className="flex-1">
                   <p className="font-medium text-charcoal">Added solar panel to energy tracker</p>
                   <p className="text-sm text-gray-500">Renewable Energy • 5 days ago</p>
                 </div>
               </div>
               <div className="flex items-center p-4 bg-primary-50 rounded-xl border border-primary-100">
-                <span className="text-2xl mr-4">🚌</span>
+                <Bus className="w-6 h-6 text-blue-500 mr-4" />
                 <div className="flex-1">
                   <p className="font-medium text-charcoal">Completed 10 eco-friendly rides</p>
                   <p className="text-sm text-gray-500">Transport • 1 week ago</p>
                 </div>
               </div>
               <div className="flex items-center p-4 bg-primary-50 rounded-xl border border-primary-100">
-                <span className="text-2xl mr-4">♻️</span>
+                <Recycle className="w-6 h-6 text-green-500 mr-4" />
                 <div className="flex-1">
                   <p className="font-medium text-charcoal">Successfully exchanged 50kg recyclables</p>
                   <p className="text-sm text-gray-500">Waste Exchange • 2 weeks ago</p>

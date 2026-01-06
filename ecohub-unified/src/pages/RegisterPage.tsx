@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { Globe } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const RegisterPage = () => {
@@ -59,7 +60,7 @@ const RegisterPage = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3 mb-12">
             <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center">
-              <span className="text-white text-xl">🌍</span>
+              <Globe className="w-5 h-5 text-white" />
             </div>
             <span className="text-2xl font-serif font-semibold text-charcoal">EcoHub</span>
           </Link>
