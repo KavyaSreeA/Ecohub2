@@ -47,3 +47,7 @@ coverage/
 # Misc
 .eslintcache
 .cache/
+
+# Firebase Service Account (NEVER COMMIT)
+*firebase-adminsdk*.json
+firebase-service-account.json

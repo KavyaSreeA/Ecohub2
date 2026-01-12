@@ -6,6 +6,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import admin from 'firebase-admin';
 
 dotenv.config();
 
@@ -14,7 +15,46 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 4000;
-const JWT_SECRET = process.env.JWT_SECRET || 'ecohub-secret-key-2024';
+const JWT_SECRET = process.env.JWT_SECRET || 'ecohub-jwt-secret-key-2026';
+
+// ==================== FIREBASE ADMIN INITIALIZATION ====================
+// Initialize Firebase Admin SDK with service account
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+
+let serviceAccount;
+try {
+  serviceAccount = require('./firebase-service-account.json');
+} catch (e) {
+  // Fallback: try loading from project root
+  try {
+    serviceAccount = require('../ecohub-c936c-firebase-adminsdk-fbsvc-70289cae69.json');
+  } catch (e2) {
+    console.warn('⚠ Firebase service account not found. Using project ID only.');
+    serviceAccount = null;
+  }
+}
+
+try {
+  if (serviceAccount) {
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+      projectId: 'ecohub-c936c',
+    });
+    console.log('✓ Firebase Admin initialized with service account');
+  } else {
+    admin.initializeApp({
+      projectId: 'ecohub-c936c',
+    });
+    console.log('✓ Firebase Admin initialized (basic mode)');
+  }
+} catch (error) {
+  if (error.code === 'app/duplicate-app') {
+    console.log('✓ Firebase Admin already initialized');
+  } else {
+    console.error('Firebase Admin initialization error:', error.message);
+  }
+}
 
 // Middleware
 app.use(cors());
@@ -28,7 +68,7 @@ if (process.env.NODE_ENV === 'production') {
 // ==================== IN-MEMORY DATABASE ====================
 const db = {
   users: [
-    { id: '1', name: 'Demo User', email: 'demo@ecohub.com', password: '$2a$10$XQxBtN8xN8xN8xN8xN8xNeXQxBtN8xN8xN8xN8xN8xN8xN8xN8xN8', role: 'user' }
+    { id: '1', name: 'Demo User', email: 'demo@ecohub.com', password: '$2a$10$XQxBtN8xN8xN8xN8xN8xNeXQxBtN8xN8xN8xN8xN8xN8xN8xN8xN8', role: 'user', firebaseUid: null }
   ],
   
   // Conservation Data
@@ -122,7 +162,38 @@ const db = {
   }
 };
 
-// ==================== AUTH MIDDLEWARE ====================
+// ==================== FIREBASE AUTH MIDDLEWARE ====================
+const verifyFirebaseToken = async (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  
+  if (!token) {
+    return res.status(401).json({ success: false, message: 'Access token required' });
+  }
+  
+  try {
+    // Try to verify as Firebase token first
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    req.user = {
+      id: decodedToken.uid,
+      email: decodedToken.email,
+      name: decodedToken.name || decodedToken.email?.split('@')[0],
+      firebaseUid: decodedToken.uid,
+    };
+    next();
+  } catch (firebaseError) {
+    // Fall back to JWT verification for backward compatibility
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+      req.user = decoded;
+      next();
+    } catch (jwtError) {
+      return res.status(403).json({ success: false, message: 'Invalid token' });
+    }
+  }
+};
+
+// Legacy JWT-only middleware (for backward compatibility)
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -139,6 +210,45 @@ const authenticateToken = (req, res, next) => {
 };
 
 // ==================== AUTH ROUTES ====================
+
+// Sync Firebase user with backend database
+app.post('/api/auth/sync', verifyFirebaseToken, async (req, res) => {
+  try {
+    const { id, name, email, avatar } = req.body;
+    
+    // Check if user already exists
+    let user = db.users.find(u => u.firebaseUid === id || u.email === email);
+    
+    if (user) {
+      // Update existing user
+      user.name = name || user.name;
+      user.avatar = avatar || user.avatar;
+      user.firebaseUid = id;
+    } else {
+      // Create new user
+      user = {
+        id: uuidv4(),
+        firebaseUid: id,
+        name: name || email.split('@')[0],
+        email,
+        avatar,
+        role: 'user',
+        createdAt: new Date().toISOString(),
+      };
+      db.users.push(user);
+    }
+    
+    res.json({ 
+      success: true, 
+      user: { id: user.id, name: user.name, email: user.email, avatar: user.avatar } 
+    });
+  } catch (error) {
+    console.error('Sync error:', error);
+    res.status(500).json({ success: false, message: 'Failed to sync user' });
+  }
+});
+
+// Legacy registration (for non-Firebase users)
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -148,7 +258,7 @@ app.post('/api/auth/register', async (req, res) => {
     }
     
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = { id: uuidv4(), name, email, password: hashedPassword, role: 'user' };
+    const user = { id: uuidv4(), name, email, password: hashedPassword, role: 'user', firebaseUid: null };
     db.users.push(user);
     
     const token = jwt.sign({ id: user.id, email: user.email, name: user.name }, JWT_SECRET, { expiresIn: '7d' });
@@ -158,6 +268,7 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
+// Legacy login (for non-Firebase users)
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -165,7 +276,7 @@ app.post('/api/auth/login', async (req, res) => {
     
     if (!user) {
       // For demo purposes, auto-create user on login
-      user = { id: uuidv4(), name: email.split('@')[0], email, password: '', role: 'user' };
+      user = { id: uuidv4(), name: email.split('@')[0], email, password: '', role: 'user', firebaseUid: null };
       db.users.push(user);
     }
     
@@ -177,8 +288,8 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// Verify token endpoint
-app.get('/api/auth/verify', (req, res) => {
+// Verify token endpoint (supports both Firebase and JWT)
+app.get('/api/auth/verify', async (req, res) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
   
@@ -187,10 +298,41 @@ app.get('/api/auth/verify', (req, res) => {
   }
   
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    res.json({ success: true, user: { id: decoded.id, email: decoded.email, name: decoded.name } });
-  } catch (error) {
-    res.status(401).json({ success: false, message: 'Invalid token' });
+    // Try Firebase token verification first
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    res.json({ 
+      success: true, 
+      user: { 
+        id: decodedToken.uid, 
+        email: decodedToken.email, 
+        name: decodedToken.name || decodedToken.email?.split('@')[0] 
+      },
+      provider: 'firebase'
+    });
+  } catch (firebaseError) {
+    // Fall back to JWT
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+      res.json({ success: true, user: { id: decoded.id, email: decoded.email, name: decoded.name }, provider: 'jwt' });
+    } catch (jwtError) {
+      res.status(401).json({ success: false, message: 'Invalid token' });
+    }
+  }
+});
+
+// Get current user profile
+app.get('/api/auth/me', verifyFirebaseToken, (req, res) => {
+  const user = db.users.find(u => u.firebaseUid === req.user.firebaseUid || u.email === req.user.email);
+  if (user) {
+    res.json({ 
+      success: true, 
+      user: { id: user.id, name: user.name, email: user.email, avatar: user.avatar } 
+    });
+  } else {
+    res.json({ 
+      success: true, 
+      user: { id: req.user.id, name: req.user.name, email: req.user.email } 
+    });
   }
 });
 
@@ -343,7 +485,8 @@ app.get('/api/health', (req, res) => {
       energy: 'active',
       transport: 'active',
       waste: 'active',
-      solarCalculator: 'active'
+      solarCalculator: 'active',
+      firebaseAuth: 'active'
     }
   });
 });
@@ -384,6 +527,7 @@ app.listen(PORT, () => {
   console.log('      - Renewable Energy API');
   console.log('      - Sustainable Transport API');
   console.log('      - Waste Exchange API');
+  console.log('      - Firebase Authentication ✓');
   console.log('═══════════════════════════════════════════════════════════════');
   console.log('');
 });

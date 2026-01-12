@@ -4,23 +4,26 @@
 export const config = {
   // ==================== AUTHENTICATION APIs ====================
   auth: {
-    // Firebase Authentication (Mock)
+    // Firebase Authentication
     firebase: {
-      apiKey: 'MOCK_AIzaSyD-EcoHub-Demo-Key-2026',
-      authDomain: 'ecohub-demo.firebaseapp.com',
-      projectId: 'ecohub-demo',
+      apiKey: 'AIzaSyCvRKfV2Kq6RcxVBK4KhMsl9w2R1pvxvsI',
+      authDomain: 'ecohub-c936c.firebaseapp.com',
+      projectId: 'ecohub-c936c',
+      storageBucket: 'ecohub-c936c.appspot.com',
+      messagingSenderId: '951878074060',
+      appId: '1:951878074060:web:91ef9398b297f518fc8c69',
       enabled: true,
     },
-    // Auth0 Alternative (Mock)
+    // Auth0 Alternative
     auth0: {
-      domain: 'ecohub-demo.auth0.com',
-      clientId: 'MOCK_Auth0_ClientId_EcoHub2026',
+      domain: 'dev-24kylvqlbsnnr126.us.auth0.com',
+      clientId: 'uWAMs192KrLSdTEptu0talXLiEeBSh2J',
       audience: 'https://api.ecohub.com',
       enabled: false,
     },
-    // JWT Configuration
+    // JWT Configuration (for backend API calls)
     jwt: {
-      secret: 'ecohub-jwt-secret-key-2026-demo',
+      secret: 'ecohub-jwt-secret-key-2026',
       expiresIn: '7d',
     },
   },
@@ -56,11 +59,11 @@ export const config = {
       apiUsername: 'system',
       enabled: true,
     },
-    // Stream Chat for Real-time (Mock)
+    // Stream Chat for Real-time
     streamChat: {
-      apiKey: 'MOCK_StreamChat_Key_EcoHub2026',
-      apiSecret: 'MOCK_StreamChat_Secret_EcoHub2026',
-      enabled: false,
+      apiKey: 'ueapfn2bgxzp',
+      apiSecret: 'pcxxwbhywkk73skyvbum68eatdctpg2nppdjxmvtk36etanv8x7zsadfa7hkn2tk',
+      enabled: true,
     },
   },
 
@@ -79,7 +82,7 @@ export const config = {
     },
     // OpenWeatherMap for Solar Irradiance
     openWeather: {
-      apiKey: 'MOCK_OpenWeather_API_Key_EcoHub2026',
+      apiKey: 'b0763003e31fa4d63b684e4c162bfe0d',
       baseUrl: 'https://api.openweathermap.org/data/2.5',
       endpoints: {
         solar: '/solar_radiation',

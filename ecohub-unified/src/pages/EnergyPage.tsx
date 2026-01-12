@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Sun, Wind, Droplets, Flame } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import WeatherWidget from '../components/WeatherWidget';
 
 // Helper function to render energy source icons
 const getEnergyIcon = (iconName: string) => {
@@ -116,9 +117,19 @@ const EnergyPage = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-10">
-        {/* Stats */}
-        {stats && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+        {/* Weather Widget & Stats Grid */}
+        <div className="grid lg:grid-cols-3 gap-6 mb-10">
+          {/* Weather Widget - Takes 1 column */}
+          <div className="lg:col-span-1">
+            <h2 className="text-lg font-serif font-semibold text-charcoal mb-4">Solar Weather Forecast</h2>
+            <WeatherWidget />
+          </div>
+          
+          {/* Stats - Takes 2 columns */}
+          <div className="lg:col-span-2">
+            <h2 className="text-lg font-serif font-semibold text-charcoal mb-4">Energy Statistics</h2>
+            {stats && (
+              <div className="grid grid-cols-2 gap-4">
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -154,8 +165,10 @@ const EnergyPage = () => {
               <div className="text-3xl font-serif font-semibold text-primary-600">{stats.projectsActive}</div>
               <div className="text-gray-500 text-sm mt-1">Active Projects</div>
             </motion.div>
+              </div>
+            )}
           </div>
-        )}
+        </div>
 
         {/* Energy Sources */}
         <h2 className="text-2xl font-serif font-semibold text-charcoal mb-6">Energy Sources</h2>

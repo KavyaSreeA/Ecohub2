@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import CommunityChat from './components/CommunityChat';
 import HomePage from './pages/HomePage';
 import Dashboard from './pages/Dashboard';
 import ConservationPage from './pages/ConservationPage';
@@ -40,6 +41,8 @@ function App() {
             </Routes>
           </main>
           <Footer />
+          {/* Community Chat - Floating button on all pages */}
+          <CommunityChat />
         </div>
       </Router>
     </AuthProvider>
