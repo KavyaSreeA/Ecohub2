@@ -103,7 +103,7 @@ export const config = {
   maps: {
     // Google Maps Platform
     google: {
-      apiKey: 'MOCK_Google_Maps_API_Key_EcoHub2026',
+      apiKey: 'AIzaSyD-e_4ZAS_9BzyGArjA6rsuC4y_QnwxjHs',
       services: {
         maps: true,
         places: true,
@@ -113,13 +113,13 @@ export const config = {
       },
       enabled: true,
     },
-    // Mapbox Alternative
+    // Mapbox Alternative (Mock)
     mapbox: {
       accessToken: 'MOCK_Mapbox_Token_EcoHub2026',
       style: 'mapbox://styles/mapbox/streets-v11',
       enabled: false,
     },
-    // OpenRouteService (Free Alternative)
+    // OpenRouteService (Free Alternative - Mock)
     openRouteService: {
       apiKey: 'MOCK_ORS_API_Key_EcoHub2026',
       baseUrl: 'https://api.openrouteservice.org',

@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import GreenTransportMap from '../components/GreenTransportMap';
+import { MapPin, Zap, Bike } from 'lucide-react';
 
 interface Vehicle {
   id: string;
@@ -359,6 +361,42 @@ const TransportPage = () => {
               </motion.div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Green Transport Map Section */}
+      {!showVehicles && (
+        <div className="max-w-7xl mx-auto px-4 py-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8"
+          >
+            <h2 className="text-2xl font-serif font-semibold text-charcoal mb-2 text-center">
+              Find Green Transport Near You
+            </h2>
+            <p className="text-gray-500 text-center max-w-2xl mx-auto mb-6">
+              Discover EV charging stations, bike sharing locations, and public transit options in your area.
+            </p>
+            
+            {/* Quick Stats */}
+            <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto mb-8">
+              <div className="flex items-center justify-center gap-2 bg-green-50 px-4 py-3 rounded-xl">
+                <Zap className="w-5 h-5 text-green-600" />
+                <span className="text-sm font-medium text-green-700">EV Charging</span>
+              </div>
+              <div className="flex items-center justify-center gap-2 bg-blue-50 px-4 py-3 rounded-xl">
+                <Bike className="w-5 h-5 text-blue-600" />
+                <span className="text-sm font-medium text-blue-700">Bike Share</span>
+              </div>
+              <div className="flex items-center justify-center gap-2 bg-yellow-50 px-4 py-3 rounded-xl">
+                <MapPin className="w-5 h-5 text-yellow-600" />
+                <span className="text-sm font-medium text-yellow-700">Transit</span>
+              </div>
+            </div>
+          </motion.div>
+
+          <GreenTransportMap />
         </div>
       )}
 
