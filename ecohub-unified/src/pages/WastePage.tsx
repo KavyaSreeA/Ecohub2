@@ -51,102 +51,31 @@ const WastePage = () => {
     description: ''
   });
 
-  // Sample listings data with contact info
-  const sampleListings: Listing[] = [
-    {
-      id: '1',
-      title: 'Recycled Plastic Bottles',
-      category: 'plastic',
-      quantity: '100 kg',
-      location: 'Mumbai, Maharashtra',
-      seller: 'GreenRecycle Co.',
-      sellerEmail: 'contact@greenrecycle.in',
-      sellerPhone: '+91 98765 43210',
-      price: '₹15/kg',
-      description: 'Clean, sorted PET bottles ready for recycling. Collected from residential areas.',
-      status: 'available'
-    },
-    {
-      id: '2',
-      title: 'Office Paper Waste',
-      category: 'paper',
-      quantity: '200 kg',
-      location: 'Bangalore, Karnataka',
-      seller: 'EcoPaper Solutions',
-      sellerEmail: 'info@ecopaper.in',
-      sellerPhone: '+91 87654 32109',
-      price: '₹8/kg',
-      description: 'Mixed office paper including printouts, newspapers, and cardboard.',
-      status: 'available'
-    },
-    {
-      id: '3',
-      title: 'Scrap Metal Collection',
-      category: 'metal',
-      quantity: '500 kg',
-      location: 'Chennai, Tamil Nadu',
-      seller: 'MetalWorks India',
-      sellerEmail: 'sales@metalworks.in',
-      sellerPhone: '+91 76543 21098',
-      price: '₹40/kg',
-      description: 'Mixed ferrous and non-ferrous metals from industrial sources.',
-      status: 'available'
-    },
-    {
-      id: '4',
-      title: 'Glass Bottles & Jars',
-      category: 'glass',
-      quantity: '150 kg',
-      location: 'Delhi NCR',
-      seller: 'ClearGlass Recyclers',
-      sellerEmail: 'recycle@clearglass.in',
-      sellerPhone: '+91 65432 10987',
-      price: '₹12/kg',
-      description: 'Sorted clear and colored glass containers, cleaned and label-free.',
-      status: 'available'
-    },
-    {
-      id: '5',
-      title: 'E-Waste Components',
-      category: 'electronics',
-      quantity: '75 kg',
-      location: 'Hyderabad, Telangana',
-      seller: 'TechRecycle Hub',
-      sellerEmail: 'ewaste@techrecycle.in',
-      sellerPhone: '+91 54321 09876',
-      price: '₹100/kg',
-      description: 'Circuit boards, cables, and electronic components for responsible recycling.',
-      status: 'available'
-    },
-    {
-      id: '6',
-      title: 'Organic Compost Material',
-      category: 'organic',
-      quantity: '300 kg',
-      location: 'Pune, Maharashtra',
-      seller: 'GreenEarth Farms',
-      sellerEmail: 'compost@greenearth.in',
-      sellerPhone: '+91 43210 98765',
-      price: 'Free',
-      description: 'Kitchen and garden waste suitable for composting. Rich in nutrients.',
-      status: 'available'
-    }
-  ];
-
   useEffect(() => {
+    // Load listings from API
+    fetch('/api/waste/listings')
+      .then(r => r.json())
+      .then(data => setListings(data))
+      .catch(err => {
+        console.error('Error fetching listings:', err);
+        setListings([]);
+      });
+
     // Load categories from API
     fetch('/api/waste/categories')
       .then(r => r.json())
       .then(data => setCategories(data))
-      .catch(() => {});
+      .catch(err => {
+        console.error('Error fetching categories:', err);
+        setCategories([]);
+      });
 
     fetch('/api/waste/stats')
       .then(r => r.json())
       .then(data => setStats(data))
-      .catch(() => {});
-
-    // Use sample listings
-    setListings(sampleListings);
+      .catch(err => {
+        console.error('Error fetching stats:', err);
+      });
   }, []);
 
   const filteredListings = selectedCategory
@@ -177,35 +106,44 @@ const WastePage = () => {
 
   const handleSubmitListing = async () => {
     if (!newListing.title || !newListing.quantity || !newListing.location) return;
+    if (!user) {
+      navigate('/login');
+      return;
+    }
 
     setIsSubmitting(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      const response = await fetch('/api/waste/listings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...newListing,
+          seller_id: user.id
+        })
+      });
 
-    const listing: Listing = {
-      id: Date.now().toString(),
-      title: newListing.title,
-      category: newListing.category,
-      quantity: newListing.quantity,
-      location: newListing.location,
-      seller: user?.name || 'Anonymous',
-      sellerEmail: user?.email || '',
-      sellerPhone: '+91 XXXXX XXXXX',
-      price: newListing.price || 'Free',
-      description: newListing.description,
-      status: 'available'
-    };
-
-    setListings([listing, ...listings]);
-    setNewListing({
-      title: '',
-      category: 'plastic',
-      quantity: '',
-      location: '',
-      price: '',
-      description: ''
-    });
-    setShowAddListingModal(false);
-    setIsSubmitting(false);
+      if (response.ok) {
+        const listing = await response.json();
+        setListings([listing, ...listings]);
+        setNewListing({
+          title: '',
+          category: 'plastic',
+          quantity: '',
+          location: '',
+          price: '',
+          description: ''
+        });
+        setShowAddListingModal(false);
+      } else {
+        console.error('Failed to create listing');
+      }
+    } catch (error) {
+      console.error('Error creating listing:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

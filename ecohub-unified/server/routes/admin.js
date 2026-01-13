@@ -12,6 +12,8 @@ const router = express.Router();
 router.use(authenticateToken);
 router.use(requireAdmin);
 
+
+
 // =============================================
 // DASHBOARD STATS
 // =============================================
@@ -21,7 +23,7 @@ router.get('/dashboard', async (req, res) => {
     const userStats = await User.getStats();
 
     // Pending approvals count
-    const pendingCounts = await query(`
+    const pendingCounts = await db.query(`
       SELECT 
         (SELECT COUNT(*) FROM business_profiles WHERE verification_status = 'pending') as pending_businesses,
         (SELECT COUNT(*) FROM community_profiles WHERE verification_status = 'pending') as pending_communities,
@@ -34,7 +36,7 @@ router.get('/dashboard', async (req, res) => {
     `);
 
     // Revenue stats (donations)
-    const revenueStats = await query(`
+    const revenueStats = await db.query(`
       SELECT 
         COALESCE(SUM(CASE WHEN payment_status = 'completed' THEN amount ELSE 0 END), 0) as total_donations,
         COALESCE(SUM(CASE WHEN payment_status = 'completed' AND DATE(created_at) = CURDATE() THEN amount ELSE 0 END), 0) as today_donations,
@@ -45,7 +47,7 @@ router.get('/dashboard', async (req, res) => {
     `);
 
     // Impact stats
-    const impactStats = await query(`
+    const impactStats = await db.query(`
       SELECT 
         COALESCE(SUM(total_co2_saved), 0) as total_co2_saved,
         COALESCE(SUM(total_trees_planted), 0) as total_trees_planted,
@@ -57,7 +59,7 @@ router.get('/dashboard', async (req, res) => {
     `);
 
     // Recent activity
-    const recentActivity = await query(`
+    const recentActivity = await db.query(`
       SELECT al.*, u.name as user_name, u.email as user_email
       FROM activity_logs al
       LEFT JOIN users u ON al.user_id = u.id
@@ -66,7 +68,7 @@ router.get('/dashboard', async (req, res) => {
     `);
 
     // Daily signups for last 30 days
-    const dailySignups = await query(`
+    const dailySignups = await db.query(`
       SELECT DATE(created_at) as date, COUNT(*) as count
       FROM users
       WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
@@ -202,28 +204,28 @@ router.get('/pending', async (req, res) => {
     const [businesses, communities, campaigns, events, listings, posts] = await Promise.all([
       BusinessProfile.getPending(1, 10),
       CommunityProfile.getPending(1, 10),
-      query(`
+      db.query(`
         SELECT c.*, u.name as organizer_name 
         FROM campaigns c 
         JOIN users u ON c.organizer_id = u.id 
         WHERE c.status = 'pending_approval' 
         ORDER BY c.created_at ASC LIMIT 10
       `),
-      query(`
+      db.query(`
         SELECT e.*, u.name as organizer_name 
         FROM events e 
         JOIN users u ON e.organizer_id = u.id 
         WHERE e.status = 'pending_approval' 
         ORDER BY e.created_at ASC LIMIT 10
       `),
-      query(`
+      db.query(`
         SELECT wl.*, u.name as seller_name 
         FROM waste_listings wl 
         JOIN users u ON wl.seller_id = u.id 
         WHERE wl.status = 'pending' 
         ORDER BY wl.created_at ASC LIMIT 10
       `),
-      query(`
+      db.query(`
         SELECT fp.*, u.name as author_name 
         FROM forum_posts fp 
         JOIN users u ON fp.author_id = u.id 
@@ -272,7 +274,7 @@ router.post('/businesses/:id/verify', async (req, res) => {
     const profile = await BusinessProfile.verify(req.params.id, req.user.id, status, notes);
     
     // Log admin action
-    await query(`
+    await db.query(`
       INSERT INTO admin_actions (id, admin_id, action_type, target_type, target_id, reason)
       VALUES (?, ?, ?, ?, ?, ?)
     `, [uuidv4(), req.user.id, status === 'verified' ? 'verify' : 'reject', 'business', req.params.id, notes]);
@@ -309,7 +311,7 @@ router.post('/communities/:id/verify', async (req, res) => {
 
     const profile = await CommunityProfile.verify(req.params.id, req.user.id, status, notes);
     
-    await query(`
+    await db.query(`
       INSERT INTO admin_actions (id, admin_id, action_type, target_type, target_id, reason)
       VALUES (?, ?, ?, ?, ?, ?)
     `, [uuidv4(), req.user.id, status === 'verified' ? 'verify' : 'reject', 'community', req.params.id, notes]);
@@ -327,7 +329,7 @@ router.post('/communities/:id/verify', async (req, res) => {
 
 router.get('/campaigns/pending', async (req, res) => {
   try {
-    const campaigns = await query(`
+    const campaigns = await db.query(`
       SELECT c.*, u.name as organizer_name, u.email as organizer_email
       FROM campaigns c
       JOIN users u ON c.organizer_id = u.id
@@ -345,13 +347,13 @@ router.post('/campaigns/:id/approve', async (req, res) => {
   try {
     const { notes } = req.body;
     
-    await query(`
+    await db.query(`
       UPDATE campaigns 
       SET status = 'active', approved_by = ?, approved_at = NOW(), approval_notes = ?
       WHERE id = ?
     `, [req.user.id, notes, req.params.id]);
 
-    await query(`
+    await db.query(`
       INSERT INTO admin_actions (id, admin_id, action_type, target_type, target_id, reason)
       VALUES (?, ?, ?, ?, ?, ?)
     `, [uuidv4(), req.user.id, 'approve', 'campaign', req.params.id, notes]);
@@ -367,13 +369,13 @@ router.post('/campaigns/:id/reject', async (req, res) => {
   try {
     const { notes } = req.body;
     
-    await query(`
+    await db.query(`
       UPDATE campaigns 
       SET status = 'rejected', approved_by = ?, approved_at = NOW(), approval_notes = ?
       WHERE id = ?
     `, [req.user.id, notes, req.params.id]);
 
-    await query(`
+    await db.query(`
       INSERT INTO admin_actions (id, admin_id, action_type, target_type, target_id, reason)
       VALUES (?, ?, ?, ?, ?, ?)
     `, [uuidv4(), req.user.id, 'reject', 'campaign', req.params.id, notes]);
@@ -391,7 +393,7 @@ router.post('/campaigns/:id/reject', async (req, res) => {
 
 router.get('/events/pending', async (req, res) => {
   try {
-    const events = await query(`
+    const events = await db.query(`
       SELECT e.*, u.name as organizer_name, u.email as organizer_email
       FROM events e
       JOIN users u ON e.organizer_id = u.id
@@ -409,13 +411,13 @@ router.post('/events/:id/approve', async (req, res) => {
   try {
     const { notes } = req.body;
     
-    await query(`
+    await db.query(`
       UPDATE events 
       SET status = 'upcoming', approved_by = ?, approved_at = NOW(), approval_notes = ?
       WHERE id = ?
     `, [req.user.id, notes, req.params.id]);
 
-    await query(`
+    await db.query(`
       INSERT INTO admin_actions (id, admin_id, action_type, target_type, target_id, reason)
       VALUES (?, ?, ?, ?, ?, ?)
     `, [uuidv4(), req.user.id, 'approve', 'event', req.params.id, notes]);
@@ -431,13 +433,13 @@ router.post('/events/:id/reject', async (req, res) => {
   try {
     const { notes } = req.body;
     
-    await query(`
+    await db.query(`
       UPDATE events 
       SET status = 'rejected', approved_by = ?, approved_at = NOW(), approval_notes = ?
       WHERE id = ?
     `, [req.user.id, notes, req.params.id]);
 
-    await query(`
+    await db.query(`
       INSERT INTO admin_actions (id, admin_id, action_type, target_type, target_id, reason)
       VALUES (?, ?, ?, ?, ?, ?)
     `, [uuidv4(), req.user.id, 'reject', 'event', req.params.id, notes]);
@@ -455,7 +457,7 @@ router.post('/events/:id/reject', async (req, res) => {
 
 router.get('/listings/pending', async (req, res) => {
   try {
-    const listings = await query(`
+    const listings = await db.query(`
       SELECT wl.*, u.name as seller_name, u.email as seller_email
       FROM waste_listings wl
       JOIN users u ON wl.seller_id = u.id
@@ -471,7 +473,7 @@ router.get('/listings/pending', async (req, res) => {
 
 router.post('/listings/:id/approve', async (req, res) => {
   try {
-    await query(`
+    await db.query(`
       UPDATE waste_listings 
       SET status = 'active', moderated_by = ?, moderated_at = NOW()
       WHERE id = ?
@@ -488,7 +490,7 @@ router.post('/listings/:id/reject', async (req, res) => {
   try {
     const { notes } = req.body;
     
-    await query(`
+    await db.query(`
       UPDATE waste_listings 
       SET status = 'rejected', moderated_by = ?, moderated_at = NOW(), moderation_notes = ?
       WHERE id = ?
@@ -507,7 +509,7 @@ router.post('/listings/:id/reject', async (req, res) => {
 
 router.get('/posts/pending', async (req, res) => {
   try {
-    const posts = await query(`
+    const posts = await db.query(`
       SELECT fp.*, u.name as author_name, u.email as author_email
       FROM forum_posts fp
       JOIN users u ON fp.author_id = u.id
@@ -523,7 +525,7 @@ router.get('/posts/pending', async (req, res) => {
 
 router.post('/posts/:id/approve', async (req, res) => {
   try {
-    await query(`
+    await db.query(`
       UPDATE forum_posts 
       SET status = 'approved', moderated_by = ?, moderated_at = NOW()
       WHERE id = ?
@@ -540,7 +542,7 @@ router.post('/posts/:id/reject', async (req, res) => {
   try {
     const { notes } = req.body;
     
-    await query(`
+    await db.query(`
       UPDATE forum_posts 
       SET status = 'rejected', moderated_by = ?, moderated_at = NOW(), moderation_notes = ?
       WHERE id = ?
@@ -563,7 +565,7 @@ router.get('/analytics', async (req, res) => {
     const days = parseInt(period);
 
     // User growth
-    const userGrowth = await query(`
+    const userGrowth = await db.query(`
       SELECT DATE(created_at) as date, 
              COUNT(*) as total,
              SUM(CASE WHEN role = 'individual' THEN 1 ELSE 0 END) as individuals,
@@ -576,7 +578,7 @@ router.get('/analytics', async (req, res) => {
     `, [days]);
 
     // Donation trends
-    const donationTrends = await query(`
+    const donationTrends = await db.query(`
       SELECT DATE(created_at) as date,
              COUNT(*) as count,
              SUM(amount) as total_amount
@@ -588,7 +590,7 @@ router.get('/analytics', async (req, res) => {
     `, [days]);
 
     // Ride stats
-    const rideStats = await query(`
+    const rideStats = await db.query(`
       SELECT DATE(booked_at) as date,
              COUNT(*) as total_rides,
              SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed,
@@ -600,7 +602,7 @@ router.get('/analytics', async (req, res) => {
     `, [days]);
 
     // Waste exchange stats
-    const wasteStats = await query(`
+    const wasteStats = await db.query(`
       SELECT DATE(created_at) as date,
              COUNT(*) as new_listings,
              SUM(CASE WHEN status = 'sold' THEN quantity ELSE 0 END) as quantity_exchanged
@@ -611,7 +613,7 @@ router.get('/analytics', async (req, res) => {
     `, [days]);
 
     // Top campaigns
-    const topCampaigns = await query(`
+    const topCampaigns = await db.query(`
       SELECT c.id, c.title, c.category, c.goal_amount, c.raised_amount,
              ROUND((c.raised_amount / c.goal_amount) * 100, 2) as progress_percent,
              COUNT(d.id) as donor_count
@@ -645,7 +647,7 @@ router.get('/logs', async (req, res) => {
     const { page = 1, limit = 50 } = req.query;
     const offset = (parseInt(page) - 1) * parseInt(limit);
 
-    const logs = await query(`
+    const logs = await db.query(`
       SELECT aa.*, u.name as admin_name, u.email as admin_email
       FROM admin_actions aa
       JOIN users u ON aa.admin_id = u.id
@@ -653,7 +655,7 @@ router.get('/logs', async (req, res) => {
       LIMIT ? OFFSET ?
     `, [parseInt(limit), offset]);
 
-    const countResult = await query('SELECT COUNT(*) as total FROM admin_actions');
+    const countResult = await db.query('SELECT COUNT(*) as total FROM admin_actions');
 
     res.json({
       logs,

@@ -131,7 +131,6 @@ const RegisterPage = () => {
     };
 
     const result = await register(registerData);
-    
     if (result.success) {
       navigate('/dashboard');
     } else {
@@ -149,22 +148,23 @@ const RegisterPage = () => {
   ];
 
   return (
-    <div className="min-h-screen flex">
+    <div className="flex">
       {/* Left Side - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-cream overflow-y-auto">
+      <div className="w-full h-full lg:w-1/2 flex items-center justify-center  bg-cream overflow-y-hidden">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           className="w-full max-w-lg py-8"
         >
-          {/* Logo */}
+          {/* Logo 
           <Link to="/" className="flex items-center space-x-3 mb-8">
             <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center">
               <span className="text-white text-xl">🌍</span>
             </div>
             <span className="text-2xl font-serif font-semibold text-charcoal">EcoHub</span>
           </Link>
-
+          */}
+          
           {/* Progress Steps */}
           <div className="flex items-center justify-center mb-8">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${step >= 1 ? 'bg-primary-500 text-white' : 'bg-gray-200 text-gray-500'}`}>1</div>
@@ -610,28 +610,28 @@ const RegisterPage = () => {
       {/* Right Side - Image */}
       <div className="hidden lg:flex lg:w-1/2 relative">
         <img 
-          src="https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?w=1200&q=80" 
+          src="https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=100&fm=jpg&h=2000&fit=max" 
           alt="Sustainable Future" 
-          className="w-full h-full object-cover"
+          className="max-h-screen  object-cover w-full"
         />
-        <div className="absolute inset-0 bg-gradient-to-l from-charcoal/60 to-transparent flex items-center justify-end">
-          <div className="p-16 text-white max-w-lg text-right">
-            <h2 className="font-serif text-4xl font-semibold mb-6">
+        <div className="absolute inset-0 bg-gradient-to-l from-charcoal/60 to-transparent flex items-center justify-center">
+          <div className="p-16 text-white max-w-lg  tracking-wider">
+            <h2 className="font-serif text-5xl font-semibold mb-6">
               {selectedRole === 'individual' && 'Start your green journey'}
               {selectedRole === 'business' && 'Sustainable business starts here'}
               {selectedRole === 'community' && 'Lead the change together'}
             </h2>
-            <p className="text-lg text-gray-200 leading-relaxed">
+            <p className="text-xl text-gray-200 leading-relaxed">
               {selectedRole === 'individual' && 'Track your impact, reduce your footprint, and be part of a growing movement for change.'}
               {selectedRole === 'business' && 'Connect with eco-conscious partners, manage waste efficiently, and showcase your sustainability efforts.'}
               {selectedRole === 'community' && 'Organize campaigns, rally volunteers, and create lasting impact in your community.'}
             </p>
             {selectedRole !== 'individual' && (
               <div className="mt-8 p-4 bg-white/10 rounded-xl backdrop-blur">
-                <h3 className="font-medium mb-2">Benefits for {selectedRole === 'business' ? 'Businesses' : 'Organizations'}:</h3>
+                <h3 className="font-medium mb-2 ">Benefits for {selectedRole === 'business' ? 'Businesses' : 'Organizations'}:</h3>
                 <ul className="text-sm space-y-1 text-gray-200">
                   {roleOptions.find(r => r.id === selectedRole)?.features.map((f, i) => (
-                    <li key={i}>✓ {f}</li>
+                    <li key={i} >✓ {f}</li>
                   ))}
                 </ul>
               </div>

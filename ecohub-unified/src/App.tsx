@@ -64,14 +64,14 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 // Layout component to conditionally show Navbar/Footer
-const Layout = ({ children, showNavbar = true, showFooter = true }: { 
+const Layout = ({ children, showFooter = true }: { 
   children: React.ReactNode; 
   showNavbar?: boolean; 
   showFooter?: boolean;
 }) => {
   return (
     <div className="min-h-screen flex flex-col">
-      {showNavbar && <Navbar />}
+      {<Navbar />}
       <main className="flex-grow">
         {children}
       </main>
@@ -86,8 +86,8 @@ const AppRoutes = () => {
     <Routes>
       {/* Public Routes */}
       <Route path="/" element={<Layout><HomePage /></Layout>} />
-      <Route path="/login" element={<Layout showNavbar={false} showFooter={false}><LoginPage /></Layout>} />
-      <Route path="/register" element={<Layout showNavbar={false} showFooter={false}><RegisterPage /></Layout>} />
+      <Route path="/login" element={<Layout showFooter={false}><LoginPage /></Layout>} />
+      <Route path="/register" element={<Layout showFooter={false}><RegisterPage /></Layout>} />
       <Route path="/conservation" element={<Layout><ConservationPage /></Layout>} />
       <Route path="/energy" element={<Layout><EnergyPage /></Layout>} />
       <Route path="/energy/contact" element={<Layout><EnergyContactPage /></Layout>} />

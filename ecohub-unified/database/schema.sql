@@ -394,6 +394,88 @@ CREATE TABLE user_impact (
 );
 
 -- =============================================
+-- ENERGY SOURCES (Static reference data)
+-- =============================================
+CREATE TABLE energy_sources (
+    id VARCHAR(36) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    icon VARCHAR(10),
+    description TEXT,
+    capacity VARCHAR(50),
+    growth VARCHAR(20),
+    image_url VARCHAR(500),
+    display_order INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- =============================================
+-- ENERGY PROJECTS (Static reference data)
+-- =============================================
+CREATE TABLE energy_projects (
+    id VARCHAR(36) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    type ENUM('solar', 'wind', 'hydro', 'geothermal', 'biomass') NOT NULL,
+    location VARCHAR(255) NOT NULL,
+    capacity VARCHAR(50),
+    status ENUM('operational', 'construction', 'planning', 'completed') DEFAULT 'planning',
+    completion_date DATE,
+    image_url VARCHAR(500),
+    display_order INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- =============================================
+-- ENERGY COMPANIES (Static reference data)
+-- =============================================
+CREATE TABLE energy_companies (
+    id VARCHAR(36) PRIMARY KEY,
+    energy_source_name VARCHAR(255) NOT NULL UNIQUE,
+    company_name VARCHAR(255) NOT NULL,
+    description TEXT,
+    address TEXT,
+    phone VARCHAR(20),
+    email VARCHAR(255),
+    website VARCHAR(255),
+    founded VARCHAR(20),
+    employees VARCHAR(50),
+    image_url VARCHAR(500),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- =============================================
+-- TRANSPORT ROUTES (Static reference data)
+-- =============================================
+CREATE TABLE transport_routes (
+    id VARCHAR(36) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    type ENUM('bus', 'metro', 'bike', 'shuttle', 'carpool') NOT NULL,
+    from_location VARCHAR(255) NOT NULL,
+    to_location VARCHAR(255) NOT NULL,
+    duration VARCHAR(50),
+    co2_saved VARCHAR(50),
+    frequency VARCHAR(50),
+    display_order INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- =============================================
+-- WASTE CATEGORIES (Static reference data)
+-- =============================================
+CREATE TABLE waste_categories (
+    id VARCHAR(36) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    icon VARCHAR(10),
+    count INT DEFAULT 0,
+    display_order INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- =============================================
 -- INDEXES FOR PERFORMANCE
 -- =============================================
 CREATE INDEX idx_users_email ON users(email);
@@ -414,6 +496,11 @@ CREATE INDEX idx_ride_bookings_rider ON ride_bookings(rider_id);
 CREATE INDEX idx_donations_campaign ON donations(campaign_id);
 CREATE INDEX idx_activity_logs_user ON activity_logs(user_id);
 CREATE INDEX idx_notifications_user ON notifications(user_id, read_status);
+CREATE INDEX idx_energy_sources_order ON energy_sources(display_order);
+CREATE INDEX idx_energy_projects_type ON energy_projects(type);
+CREATE INDEX idx_energy_companies_source ON energy_companies(energy_source_name);
+CREATE INDEX idx_transport_routes_type ON transport_routes(type);
+CREATE INDEX idx_waste_categories_order ON waste_categories(display_order);
 
 -- =============================================
 -- SEED DEFAULT ADMIN USER

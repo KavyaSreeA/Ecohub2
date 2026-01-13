@@ -50,59 +50,86 @@ const HomePage = () => {
   return (
     <div className="bg-cream">
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center overflow-hidden">
-        <div className="absolute inset-0 teal-gradient"></div>
-        <div className="absolute right-0 top-0 w-1/2 h-full hidden lg:block">
-          <img 
-            src="https://images.unsplash.com/photo-1497436072909-60f360e1d4b1?w=1200&q=80" 
-            alt="Nature" 
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-teal-light to-transparent"></div>
-        </div>
-        
-        <div className="relative max-w-7xl mx-auto px-6 lg:px-8 py-20 lg:py-32">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="max-w-2xl"
-          >
-            <p className="text-primary-600 font-medium tracking-widest uppercase text-sm mb-4">
-              Sustainability Made Simple
-            </p>
-            <h1 className="font-serif text-5xl md:text-7xl font-semibold text-charcoal leading-tight mb-6">
+      <section className="relative min-h-screen pt-20 flex items-center justify-center overflow-hidden">
+
+  {/* Background image */}
+  <img
+    src="https://images.unsplash.com/photo-1477322524744-0eece9e79640?w=2000&q=80"
+    alt="Nature"
+    className="absolute inset-0 w-full h-full object-cover"
+  />
+
+  {/* Optional dark overlay for contrast */}
+  <div className="absolute inset-0 bg-black/20"></div>
+
+  {/* Glass container */}
+        <div
+          className="
+    relative z-10
+    mx-4 sm:mx-6 md:mx-8
+    w-full max-w-[96rem]
+    flex items-center justify-center
+    rounded-2xl
+    bg-white/10 backdrop-blur-sm
+    shadow-2xl border border-white/20
+
+    /* HEIGHT */
+    min-h-[28rem] sm:min-h-[32rem] md:h-[40rem]
+
+    /* PADDING */
+    px-6 py-10
+    sm:px-10 sm:py-12
+    md:px-16 md:py-16
+  "
+        >
+
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8 }}
+    >
+      <p className="text-teal-100 font-medium tracking-widest text-sm mb-4">
+        SUSTAINABILITY MADE SIMPLE
+      </p>
+
+            <h1 className="
+  font-serif font-semibold text-white leading-tight mb-6
+  text-4xl sm:text-5xl md:text-7xl
+">
               Make your lifestyle
-              <span className="block text-primary-500">work for Earth</span>
+              <span className="block text-2xl sm:text-3xl md:text-6xl text-primary-400">
+                Work for Earth
+              </span>
             </h1>
-            <p className="text-lg text-gray-600 mb-10 leading-relaxed max-w-xl">
-              EcoHub unifies conservation, renewable energy, sustainable transport, and waste management 
-              into one elegant platform for meaningful environmental action.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              {isAuthenticated ? (
-                <Link to="/dashboard" className="btn-primary text-center">
-                  Go to Dashboard
-                </Link>
-              ) : (
-                <>
-                  <Link to="/register" className="btn-primary text-center">
-                    Get Started
-                  </Link>
-                  <Link to="/login" className="btn-outline text-center">
-                    Sign In
-                  </Link>
-                </>
-              )}
+
+
+            <p className="
+  text-teal-50 leading-relaxed mb-10
+  text-base sm:text-lg
+  max-w-xl
+">
+
+        EcoHub unifies conservation, renewable energy, sustainable transport, and waste management
+        into one elegant platform for meaningful environmental action.
+      </p>
+
+            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+              <Link to="/register" className="btn-primary text-center w-full sm:w-auto">
+                Get Started
+              </Link>
+              <Link to="/login" className="btn-outline text-center w-full sm:w-auto">
+                Sign In
+              </Link>
             </div>
-          </motion.div>
-        </div>
-      </section>
+
+    </motion.div>
+  </div>
+</section>
 
       {/* Impact Stats */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
             {impactStats.map((stat, index) => (
               <motion.div
                 key={stat.label}
@@ -124,7 +151,7 @@ const HomePage = () => {
       </section>
 
       {/* Services Section */}
-      <section className="py-24 bg-cream">
+      <section className="py-24 bg-cream space-y-16 md:space-y-24">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

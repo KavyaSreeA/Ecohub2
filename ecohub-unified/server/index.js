@@ -26,153 +26,100 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 
-// ==================== STATIC DATA (For backward compatibility during migration) ====================
-const staticData = {
-  // Conservation Data
-  campaigns: [
-    { id: '1', title: 'Save the Amazon Rainforest', description: 'Protect 1 million acres of rainforest', goal: 100000, raised: 75000, image: 'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=400', category: 'forest', status: 'active' },
-    { id: '2', title: 'Ocean Cleanup Initiative', description: 'Remove plastic from Pacific Ocean', goal: 50000, raised: 32000, image: 'https://images.unsplash.com/photo-1484291470158-b8f8d608850d?w=400', category: 'ocean', status: 'active' },
-    { id: '3', title: 'Wildlife Corridor Project', description: 'Create safe passages for wildlife migration', goal: 75000, raised: 45000, image: 'https://images.unsplash.com/photo-1474511320723-9a56873571b7?w=400', category: 'wildlife', status: 'active' },
-    { id: '4', title: 'Coral Reef Restoration', description: 'Restore damaged coral ecosystems', goal: 60000, raised: 28000, image: 'https://images.unsplash.com/photo-1546026423-cc4642628d2b?w=400', category: 'ocean', status: 'active' }
-  ],
-  
-  forumPosts: [
-    { id: '1', title: 'Tips for reducing plastic usage', message: 'Here are my top 10 tips for reducing plastic in daily life...', author: 'EcoWarrior', likes: 45, comments: 12, createdAt: '2024-01-15' },
-    { id: '2', title: 'Local conservation groups in Seattle', message: 'Looking for volunteers to join our weekend cleanup initiatives!', author: 'GreenSeattle', likes: 23, comments: 8, createdAt: '2024-01-14' },
-    { id: '3', title: 'Success story: Community garden', message: 'Our neighborhood transformed an abandoned lot into a thriving community garden!', author: 'UrbanGardener', likes: 67, comments: 24, createdAt: '2024-01-13' }
-  ],
-  
-  events: [
-    { id: '1', title: 'Beach Cleanup Day', date: '2024-02-15', location: 'Santa Monica Beach', participants: 150, image: 'https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?w=400' },
-    { id: '2', title: 'Tree Planting Marathon', date: '2024-02-20', location: 'Central Park', participants: 200, image: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=400' },
-    { id: '3', title: 'Wildlife Photography Workshop', date: '2024-03-01', location: 'Yellowstone', participants: 50, image: 'https://images.unsplash.com/photo-1504173010664-32509aeebb62?w=400' }
-  ],
-
-  // Renewable Energy Data
-  energySources: [
-    { id: '1', name: 'Solar Power', icon: '☀️', description: 'Harness the power of the sun', capacity: '500 MW', growth: '+15%' },
-    { id: '2', name: 'Wind Energy', icon: '💨', description: 'Clean energy from wind turbines', capacity: '350 MW', growth: '+22%' },
-    { id: '3', name: 'Hydroelectric', icon: '💧', description: 'Power from flowing water', capacity: '800 MW', growth: '+8%' },
-    { id: '4', name: 'Geothermal', icon: '🌋', description: 'Earth\'s natural heat', capacity: '150 MW', growth: '+12%' }
-  ],
-  
-  energyProjects: [
-    { id: '1', name: 'Desert Sun Solar Farm', type: 'solar', location: 'Nevada, USA', capacity: '250 MW', status: 'operational', completionDate: '2023-06-15' },
-    { id: '2', name: 'Coastal Wind Project', type: 'wind', location: 'Denmark', capacity: '180 MW', status: 'construction', completionDate: '2024-08-01' },
-    { id: '3', name: 'Mountain Hydro Station', type: 'hydro', location: 'Norway', capacity: '400 MW', status: 'operational', completionDate: '2022-03-20' },
-    { id: '4', name: 'Urban Solar Initiative', type: 'solar', location: 'Tokyo, Japan', capacity: '75 MW', status: 'planning', completionDate: '2025-01-15' }
-  ],
-
-  energyStats: {
-    totalCapacity: '1,800 MW',
-    co2Saved: '2.5M tons',
-    homesSupplied: '450,000',
-    projectsActive: 24
-  },
-
-  // Transport Data
-  routes: [
-    { id: '1', name: 'Downtown Express', type: 'bus', from: 'Central Station', to: 'Business District', duration: '25 min', co2Saved: '2.5 kg', frequency: 'Every 10 min' },
-    { id: '2', name: 'Green Line Metro', type: 'metro', from: 'Airport', to: 'City Center', duration: '35 min', co2Saved: '4.2 kg', frequency: 'Every 5 min' },
-    { id: '3', name: 'Bike Share Route', type: 'bike', from: 'University', to: 'Tech Park', duration: '20 min', co2Saved: '3.0 kg', frequency: 'On-demand' },
-    { id: '4', name: 'Electric Shuttle', type: 'shuttle', from: 'Mall', to: 'Residential Area', duration: '15 min', co2Saved: '1.8 kg', frequency: 'Every 15 min' }
-  ],
-  
-  vehicles: [
-    { id: '1', type: 'Electric Bus', count: 150, co2Reduction: '85%', image: '🚌' },
-    { id: '2', type: 'E-Bikes', count: 500, co2Reduction: '100%', image: '🚲' },
-    { id: '3', type: 'Electric Cars', count: 200, co2Reduction: '90%', image: '🚗' },
-    { id: '4', type: 'Metro Trains', count: 50, co2Reduction: '95%', image: '🚇' }
-  ],
-
-  transportStats: {
-    totalRides: '1.2M',
-    co2Saved: '850 tons',
-    activeUsers: '45,000',
-    routesCovered: 120
-  },
-
-  // Waste Exchange Data
-  wasteListings: [
-    { id: '1', title: 'Recyclable Cardboard Boxes', category: 'paper', quantity: '50 kg', location: 'Brooklyn, NY', seller: 'PackageCo', price: 'Free', image: '📦', status: 'available' },
-    { id: '2', title: 'Scrap Metal - Aluminum', category: 'metal', quantity: '100 kg', location: 'Newark, NJ', seller: 'MetalWorks', price: '$150', image: '🔩', status: 'available' },
-    { id: '3', title: 'Organic Compost Material', category: 'organic', quantity: '200 kg', location: 'Queens, NY', seller: 'GreenFarm', price: '$50', image: '🌱', status: 'available' },
-    { id: '4', title: 'Electronic Waste - Computers', category: 'e-waste', quantity: '25 units', location: 'Manhattan, NY', seller: 'TechRecycle', price: 'Free pickup', image: '💻', status: 'available' },
-    { id: '5', title: 'Glass Bottles - Clear', category: 'glass', quantity: '80 kg', location: 'Hoboken, NJ', seller: 'BottleCo', price: '$30', image: '🍾', status: 'available' },
-    { id: '6', title: 'Plastic Containers', category: 'plastic', quantity: '60 kg', location: 'Bronx, NY', seller: 'CleanPlastic', price: 'Free', image: '🥤', status: 'pending' }
-  ],
-
-  wasteCategories: [
-    { id: '1', name: 'Paper & Cardboard', icon: '📄', count: 156 },
-    { id: '2', name: 'Metals', icon: '🔧', count: 89 },
-    { id: '3', name: 'Plastics', icon: '♻️', count: 234 },
-    { id: '4', name: 'Electronics', icon: '📱', count: 67 },
-    { id: '5', name: 'Organic', icon: '🌿', count: 178 },
-    { id: '6', name: 'Glass', icon: '🫙', count: 92 }
-  ],
-
-  wasteStats: {
-    totalListings: 816,
-    wasteExchanged: '12,500 tons',
-    co2Prevented: '8,200 tons',
-    activeSellers: 342
-  }
-};
+// Static data has been moved to database - see database/seed_data.sql
 
 // ==================== CONSERVATION ROUTES ====================
 app.get('/api/conservation/campaigns', async (req, res) => {
   try {
-    const [campaigns] = await db.query('SELECT * FROM campaigns WHERE status = "approved"');
-    if (campaigns.length === 0) {
-      res.json(staticData.campaigns);
-    } else {
-      res.json(campaigns);
-    }
+    const [campaigns] = await db.query(`
+      SELECT 
+        id,
+        title,
+        description,
+        category,
+        image_url as image,
+        goal_amount as goal,
+        raised_amount as raised,
+        status
+      FROM campaigns 
+      WHERE status IN ('active', 'approved') 
+      ORDER BY created_at DESC
+    `);
+    res.json(campaigns);
   } catch (error) {
-    res.json(staticData.campaigns);
+    console.error('Error fetching campaigns:', error);
+    res.status(500).json({ error: 'Failed to fetch campaigns' });
   }
 });
 
 app.get('/api/conservation/campaigns/:id', async (req, res) => {
   try {
-    const [campaigns] = await db.query('SELECT * FROM campaigns WHERE id = ?', [req.params.id]);
+    const [campaigns] = await db.query(`
+      SELECT 
+        id,
+        title,
+        description,
+        category,
+        image_url as image,
+        goal_amount as goal,
+        raised_amount as raised,
+        status
+      FROM campaigns 
+      WHERE id = ?
+    `, [req.params.id]);
     if (campaigns.length === 0) {
-      const campaign = staticData.campaigns.find(c => c.id === req.params.id);
-      if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
-      res.json(campaign);
-    } else {
-      res.json(campaigns[0]);
+      return res.status(404).json({ error: 'Campaign not found' });
     }
+    res.json(campaigns[0]);
   } catch (error) {
-    const campaign = staticData.campaigns.find(c => c.id === req.params.id);
-    if (!campaign) return res.status(404).json({ error: 'Campaign not found' });
-    res.json(campaign);
+    console.error('Error fetching campaign:', error);
+    res.status(500).json({ error: 'Failed to fetch campaign' });
   }
 });
 
 app.get('/api/conservation/forum', async (req, res) => {
   try {
-    const [posts] = await db.query('SELECT * FROM forum_posts WHERE status = "approved" ORDER BY created_at DESC');
-    if (posts.length === 0) {
-      res.json(staticData.forumPosts);
-    } else {
-      res.json(posts);
-    }
+    const [posts] = await db.query(`
+      SELECT 
+        fp.id,
+        fp.title,
+        fp.content as message,
+        u.name as author,
+        fp.likes_count as likes,
+        fp.comments_count as comments,
+        DATE(fp.created_at) as createdAt
+      FROM forum_posts fp
+      LEFT JOIN users u ON fp.author_id = u.id
+      WHERE fp.status = 'approved' 
+      ORDER BY fp.created_at DESC
+    `);
+    res.json(posts);
   } catch (error) {
-    res.json(staticData.forumPosts);
+    console.error('Error fetching forum posts:', error);
+    res.status(500).json({ error: 'Failed to fetch forum posts' });
   }
 });
 
 app.get('/api/conservation/events', async (req, res) => {
   try {
-    const [events] = await db.query('SELECT * FROM events WHERE status = "approved" ORDER BY event_date ASC');
-    if (events.length === 0) {
-      res.json(staticData.events);
-    } else {
-      res.json(events);
-    }
+    const [events] = await db.query(`
+      SELECT 
+        id,
+        title,
+        description,
+        event_type,
+        image_url as image,
+        DATE(event_date) as date,
+        location,
+        current_participants as participants
+      FROM events 
+      WHERE status IN ('upcoming', 'approved', 'ongoing')
+      ORDER BY event_date ASC
+    `);
+    res.json(events);
   } catch (error) {
-    res.json(staticData.events);
+    console.error('Error fetching events:', error);
+    res.status(500).json({ error: 'Failed to fetch events' });
   }
 });
 
@@ -180,59 +127,182 @@ app.get('/api/conservation/stats', async (req, res) => {
   try {
     const [[stats]] = await db.query(`
       SELECT 
-        (SELECT COUNT(*) FROM campaigns WHERE status = 'approved') as totalCampaigns,
-        (SELECT COALESCE(SUM(current_amount), 0) FROM campaigns) as totalRaised,
-        (SELECT COUNT(*) FROM events WHERE status = 'approved') as activeEvents,
+        (SELECT COUNT(*) FROM campaigns WHERE status IN ('active', 'approved')) as totalCampaigns,
+        (SELECT COALESCE(SUM(raised_amount), 0) FROM campaigns) as totalRaised,
+        (SELECT COUNT(*) FROM events WHERE status IN ('upcoming', 'approved', 'ongoing')) as activeEvents,
         (SELECT COUNT(*) FROM forum_posts WHERE status = 'approved') as forumPosts
     `);
     res.json(stats);
   } catch (error) {
-    res.json({
-      totalCampaigns: staticData.campaigns.length,
-      totalRaised: staticData.campaigns.reduce((sum, c) => sum + c.raised, 0),
-      activeEvents: staticData.events.length,
-      forumPosts: staticData.forumPosts.length
-    });
+    console.error('Error fetching conservation stats:', error);
+    res.status(500).json({ error: 'Failed to fetch stats' });
   }
 });
 
 // ==================== RENEWABLE ENERGY ROUTES ====================
-app.get('/api/energy/sources', (req, res) => {
-  res.json(staticData.energySources);
+app.get('/api/energy/sources', async (req, res) => {
+  try {
+    const [sources] = await db.query(`
+      SELECT 
+        id,
+        name,
+        icon,
+        description,
+        capacity,
+        growth,
+        image_url
+      FROM energy_sources 
+      ORDER BY display_order ASC
+    `);
+    res.json(sources);
+  } catch (error) {
+    console.error('Error fetching energy sources:', error);
+    res.status(500).json({ error: 'Failed to fetch energy sources' });
+  }
 });
 
-app.get('/api/energy/projects', (req, res) => {
-  res.json(staticData.energyProjects);
+app.get('/api/energy/projects', async (req, res) => {
+  try {
+    const [projects] = await db.query(`
+      SELECT 
+        id,
+        name,
+        type,
+        location,
+        capacity,
+        status,
+        completion_date as completionDate,
+        image_url
+      FROM energy_projects 
+      ORDER BY display_order ASC
+    `);
+    res.json(projects);
+  } catch (error) {
+    console.error('Error fetching energy projects:', error);
+    res.status(500).json({ error: 'Failed to fetch energy projects' });
+  }
 });
 
-app.get('/api/energy/stats', (req, res) => {
-  res.json(staticData.energyStats);
+app.get('/api/energy/stats', async (req, res) => {
+  try {
+    const [[stats]] = await db.query(`
+      SELECT 
+        (SELECT COUNT(*) FROM energy_projects WHERE status = 'operational') as projectsActive,
+        (SELECT COUNT(*) FROM energy_sources) as totalSources
+    `);
+    
+    // Calculate aggregated stats
+    const [sources] = await db.query('SELECT capacity FROM energy_sources');
+    const totalCapacity = sources.reduce((sum, s) => {
+      const num = parseFloat(s.capacity) || 0;
+      return sum + num;
+    }, 0);
+    
+    res.json({
+      totalCapacity: `${totalCapacity.toLocaleString()} MW`,
+      co2Saved: '2.5M tons',
+      homesSupplied: '450,000',
+      projectsActive: stats.projectsActive || 0
+    });
+  } catch (error) {
+    console.error('Error fetching energy stats:', error);
+    res.status(500).json({ error: 'Failed to fetch energy stats' });
+  }
+});
+
+app.get('/api/energy/companies/:sourceName', async (req, res) => {
+  try {
+    const [companies] = await db.query(`
+      SELECT 
+        id,
+        energy_source_name,
+        company_name as name,
+        description,
+        address,
+        phone,
+        email,
+        website,
+        founded,
+        employees,
+        image_url as image
+      FROM energy_companies 
+      WHERE energy_source_name = ?
+    `, [req.params.sourceName]);
+    
+    if (companies.length === 0) {
+      return res.status(404).json({ error: 'Company not found' });
+    }
+    res.json(companies[0]);
+  } catch (error) {
+    console.error('Error fetching energy company:', error);
+    res.status(500).json({ error: 'Failed to fetch energy company' });
+  }
 });
 
 app.get('/api/energy/providers', async (req, res) => {
   try {
-    const [providers] = await db.query('SELECT * FROM energy_providers WHERE is_active = 1');
+    const [providers] = await db.query(`
+      SELECT * FROM energy_providers 
+      WHERE status = 'active'
+    `);
     res.json(providers);
   } catch (error) {
+    console.error('Error fetching energy providers:', error);
     res.json([]);
   }
 });
 
 // ==================== TRANSPORT ROUTES ====================
-app.get('/api/transport/routes', (req, res) => {
-  res.json(staticData.routes);
+app.get('/api/transport/routes', async (req, res) => {
+  try {
+    const [routes] = await db.query(`
+      SELECT 
+        id,
+        name,
+        type,
+        from_location as from,
+        to_location as to,
+        duration,
+        co2_saved as co2Saved,
+        frequency
+      FROM transport_routes 
+      ORDER BY display_order ASC
+    `);
+    res.json(routes);
+  } catch (error) {
+    console.error('Error fetching transport routes:', error);
+    res.status(500).json({ error: 'Failed to fetch transport routes' });
+  }
 });
 
 app.get('/api/transport/vehicles', async (req, res) => {
   try {
-    const [vehicles] = await db.query('SELECT * FROM vehicles WHERE is_active = 1');
-    if (vehicles.length === 0) {
-      res.json(staticData.vehicles);
-    } else {
-      res.json(vehicles);
-    }
+    const [vehicles] = await db.query(`
+      SELECT 
+        id,
+        vehicle_type as type,
+        make,
+        model,
+        capacity as count,
+        co2_reduction_percent as co2Reduction,
+        images
+      FROM vehicles 
+      WHERE status = 'active' AND available = TRUE
+    `);
+    
+    // Transform to match expected format
+    const formattedVehicles = vehicles.map(v => ({
+      id: v.id,
+      type: v.type,
+      count: v.count || 1,
+      co2Reduction: v.co2Reduction ? `${v.co2Reduction}%` : '0%',
+      image: v.images ? (Array.isArray(v.images) ? v.images[0] : JSON.parse(v.images)[0]) : '🚗'
+    }));
+    
+    res.json(formattedVehicles);
   } catch (error) {
-    res.json(staticData.vehicles);
+    console.error('Error fetching vehicles:', error);
+    res.status(500).json({ error: 'Failed to fetch vehicles' });
   }
 });
 
@@ -240,65 +310,131 @@ app.get('/api/transport/stats', async (req, res) => {
   try {
     const [[stats]] = await db.query(`
       SELECT 
-        (SELECT COUNT(*) FROM rides) as totalRides,
-        (SELECT COALESCE(SUM(carbon_saved), 0) FROM rides) as co2Saved,
-        (SELECT COUNT(DISTINCT user_id) FROM rides) as activeUsers
+        (SELECT COUNT(*) FROM ride_bookings WHERE status = 'completed') as totalRides,
+        (SELECT COALESCE(SUM(co2_saved), 0) FROM ride_bookings WHERE status = 'completed') as co2Saved,
+        (SELECT COUNT(DISTINCT rider_id) FROM ride_bookings) as activeUsers,
+        (SELECT COUNT(DISTINCT city) FROM vehicles WHERE status = 'active') as routesCovered
     `);
+    
     res.json({
-      ...staticData.transportStats,
-      ...stats
+      totalRides: stats.totalRides ? `${(stats.totalRides / 1000).toFixed(1)}M` : '1.2M',
+      co2Saved: stats.co2Saved ? `${(stats.co2Saved / 1000).toFixed(0)} tons` : '850 tons',
+      activeUsers: stats.activeUsers ? stats.activeUsers.toLocaleString() : '45,000',
+      routesCovered: stats.routesCovered || 120
     });
   } catch (error) {
-    res.json(staticData.transportStats);
+    console.error('Error fetching transport stats:', error);
+    res.json({
+      totalRides: '1.2M',
+      co2Saved: '850 tons',
+      activeUsers: '45,000',
+      routesCovered: 120
+    });
   }
 });
 
 // ==================== WASTE EXCHANGE ROUTES ====================
 app.get('/api/waste/listings', async (req, res) => {
   try {
-    const [listings] = await db.query('SELECT * FROM waste_listings WHERE status = "available" ORDER BY created_at DESC');
-    if (listings.length === 0) {
-      res.json(staticData.wasteListings);
-    } else {
-      res.json(listings);
-    }
+    const [listings] = await db.query(`
+      SELECT 
+        wl.id,
+        wl.title,
+        wl.category,
+        CONCAT(wl.quantity, ' ', wl.unit) as quantity,
+        wl.location,
+        u.name as seller,
+        u.email as sellerEmail,
+        u.phone as sellerPhone,
+        CONCAT('₹', wl.price_per_unit, '/', wl.unit) as price,
+        wl.description,
+        wl.status
+      FROM waste_listings wl
+      LEFT JOIN users u ON wl.seller_id = u.id
+      WHERE wl.status = 'active' 
+      ORDER BY wl.created_at DESC
+    `);
+    res.json(listings);
   } catch (error) {
-    res.json(staticData.wasteListings);
+    console.error('Error fetching waste listings:', error);
+    res.status(500).json({ error: 'Failed to fetch waste listings' });
   }
 });
 
-app.get('/api/waste/categories', (req, res) => {
-  res.json(staticData.wasteCategories);
+app.get('/api/waste/categories', async (req, res) => {
+  try {
+    const [categories] = await db.query(`
+      SELECT 
+        wc.id,
+        wc.name,
+        wc.icon,
+        COALESCE(COUNT(wl.id), 0) as count
+      FROM waste_categories wc
+      LEFT JOIN waste_listings wl ON wc.name LIKE CONCAT('%', wl.category, '%') AND wl.status = 'active'
+      GROUP BY wc.id, wc.name, wc.icon
+      ORDER BY wc.display_order ASC
+    `);
+    res.json(categories);
+  } catch (error) {
+    console.error('Error fetching waste categories:', error);
+    res.status(500).json({ error: 'Failed to fetch waste categories' });
+  }
 });
 
 app.get('/api/waste/stats', async (req, res) => {
   try {
     const [[stats]] = await db.query(`
       SELECT 
-        (SELECT COUNT(*) FROM waste_listings) as totalListings,
-        (SELECT COUNT(DISTINCT user_id) FROM waste_listings) as activeSellers
+        (SELECT COUNT(*) FROM waste_listings WHERE status = 'active') as totalListings,
+        (SELECT COUNT(DISTINCT seller_id) FROM waste_listings WHERE status = 'active') as activeSellers,
+        (SELECT COALESCE(SUM(quantity), 0) FROM waste_listings WHERE status = 'active') as totalWaste
     `);
+    
     res.json({
-      ...staticData.wasteStats,
-      ...stats
+      totalListings: stats.totalListings || 0,
+      wasteExchanged: stats.totalWaste ? `${(stats.totalWaste / 1000).toFixed(1)} tons` : '12,500 tons',
+      co2Prevented: '8,200 tons',
+      activeSellers: stats.activeSellers || 0
     });
   } catch (error) {
-    res.json(staticData.wasteStats);
+    console.error('Error fetching waste stats:', error);
+    res.json({
+      totalListings: 0,
+      wasteExchanged: '12,500 tons',
+      co2Prevented: '8,200 tons',
+      activeSellers: 0
+    });
   }
 });
 
 app.post('/api/waste/listings', async (req, res) => {
   try {
-    const { title, category, quantity, location, price, description } = req.body;
-    const [result] = await db.query(
-      'INSERT INTO waste_listings (title, category, quantity, unit, location, price, description, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [title, category, quantity, 'kg', location, price, description, 'available']
+    const { title, category, quantity, location, price, description, seller_id } = req.body;
+    const listingId = uuidv4();
+    
+    // Parse quantity and price
+    const quantityMatch = quantity.match(/(\d+\.?\d*)\s*(\w+)/);
+    const qty = quantityMatch ? parseFloat(quantityMatch[1]) : 0;
+    const unit = quantityMatch ? quantityMatch[2] : 'kg';
+    
+    const priceMatch = price.match(/₹?(\d+\.?\d*)/);
+    const pricePerUnit = priceMatch ? parseFloat(priceMatch[1]) : 0;
+    
+    await db.query(
+      `INSERT INTO waste_listings 
+       (id, seller_id, title, category, quantity, unit, price_per_unit, location, description, status) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')`,
+      [listingId, seller_id || 'admin-001', title, category, qty, unit, pricePerUnit, location, description]
     );
-    res.status(201).json({ id: result.insertId, ...req.body, status: 'available' });
+    
+    res.status(201).json({ 
+      id: listingId, 
+      ...req.body, 
+      status: 'active' 
+    });
   } catch (error) {
-    const listing = { id: uuidv4(), ...req.body, status: 'available' };
-    staticData.wasteListings.push(listing);
-    res.status(201).json(listing);
+    console.error('Error creating waste listing:', error);
+    res.status(500).json({ error: 'Failed to create listing' });
   }
 });
 
@@ -337,28 +473,59 @@ app.get('/api/dashboard/stats', async (req, res) => {
         (SELECT COUNT(*) FROM users WHERE role = 'community') as totalCommunities
     `);
     
+    const [[conservationStats]] = await db.query(`
+      SELECT 
+        (SELECT COUNT(*) FROM campaigns WHERE status IN ('active', 'approved')) as campaigns,
+        (SELECT COALESCE(SUM(raised_amount), 0) FROM campaigns) as raised,
+        (SELECT COUNT(*) FROM events WHERE status IN ('upcoming', 'approved', 'ongoing')) as events
+    `);
+    
+    const [[energyStats]] = await db.query(`
+      SELECT 
+        (SELECT COUNT(*) FROM energy_projects WHERE status = 'operational') as projectsActive
+    `);
+    
+    const [[transportStats]] = await db.query(`
+      SELECT 
+        (SELECT COUNT(*) FROM ride_bookings WHERE status = 'completed') as totalRides,
+        (SELECT COALESCE(SUM(co2_saved), 0) FROM ride_bookings) as co2Saved
+    `);
+    
+    const [[wasteStats]] = await db.query(`
+      SELECT 
+        (SELECT COUNT(*) FROM waste_listings WHERE status = 'active') as totalListings,
+        (SELECT COUNT(DISTINCT seller_id) FROM waste_listings WHERE status = 'active') as activeSellers
+    `);
+    
     res.json({
       users: userStats,
       conservation: {
-        campaigns: staticData.campaigns.length,
-        raised: staticData.campaigns.reduce((sum, c) => sum + c.raised, 0),
-        events: staticData.events.length
+        campaigns: conservationStats.campaigns || 0,
+        raised: conservationStats.raised || 0,
+        events: conservationStats.events || 0
       },
-      energy: staticData.energyStats,
-      transport: staticData.transportStats,
-      waste: staticData.wasteStats
+      energy: {
+        totalCapacity: '1,800 MW',
+        co2Saved: '2.5M tons',
+        homesSupplied: '450,000',
+        projectsActive: energyStats.projectsActive || 0
+      },
+      transport: {
+        totalRides: transportStats.totalRides ? `${(transportStats.totalRides / 1000).toFixed(1)}M` : '1.2M',
+        co2Saved: transportStats.co2Saved ? `${(transportStats.co2Saved / 1000).toFixed(0)} tons` : '850 tons',
+        activeUsers: '45,000',
+        routesCovered: 120
+      },
+      waste: {
+        totalListings: wasteStats.totalListings || 0,
+        wasteExchanged: '12,500 tons',
+        co2Prevented: '8,200 tons',
+        activeSellers: wasteStats.activeSellers || 0
+      }
     });
   } catch (error) {
-    res.json({
-      conservation: {
-        campaigns: staticData.campaigns.length,
-        raised: staticData.campaigns.reduce((sum, c) => sum + c.raised, 0),
-        events: staticData.events.length
-      },
-      energy: staticData.energyStats,
-      transport: staticData.transportStats,
-      waste: staticData.wasteStats
-    });
+    console.error('Error fetching dashboard stats:', error);
+    res.status(500).json({ error: 'Failed to fetch dashboard stats' });
   }
 });
 
