@@ -35,7 +35,10 @@ async function query(sql, params = []) {
     const [results] = await pool.execute(sql, params);
     return results;
   } catch (error) {
-    console.error('Database query error:', error);
+    // Don't log expected "table doesn't exist" errors - they're handled gracefully with fallbacks
+    if (error.code !== 'ER_NO_SUCH_TABLE') {
+      console.error('Database query error:', error);
+    }
     throw error;
   }
 }

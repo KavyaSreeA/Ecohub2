@@ -9,9 +9,9 @@ interface Listing {
   category: string;
   quantity: string;
   location: string;
-  seller: string;
-  sellerEmail: string;
-  sellerPhone: string;
+  seller?: string;
+  sellerEmail?: string;
+  sellerPhone?: string;
   price: string;
   description: string;
   status: string;
@@ -54,8 +54,19 @@ const WastePage = () => {
   useEffect(() => {
     // Load listings from API
     fetch('/api/waste/listings')
-      .then(r => r.json())
-      .then(data => setListings(data))
+      .then(async r => {
+        if (!r.ok) {
+          throw new Error(`HTTP error! status: ${r.status}`);
+        }
+        const text = await r.text();
+        if (!text) {
+          return [];
+        }
+        return JSON.parse(text);
+      })
+      .then(data => {
+        setListings(Array.isArray(data) ? data : []);
+      })
       .catch(err => {
         console.error('Error fetching listings:', err);
         setListings([]);
@@ -63,18 +74,41 @@ const WastePage = () => {
 
     // Load categories from API
     fetch('/api/waste/categories')
-      .then(r => r.json())
-      .then(data => setCategories(data))
+      .then(async r => {
+        if (!r.ok) {
+          throw new Error(`HTTP error! status: ${r.status}`);
+        }
+        const text = await r.text();
+        if (!text) {
+          return [];
+        }
+        return JSON.parse(text);
+      })
+      .then(data => {
+        setCategories(Array.isArray(data) ? data : []);
+      })
       .catch(err => {
         console.error('Error fetching categories:', err);
         setCategories([]);
       });
 
     fetch('/api/waste/stats')
-      .then(r => r.json())
-      .then(data => setStats(data))
+      .then(async r => {
+        if (!r.ok) {
+          throw new Error(`HTTP error! status: ${r.status}`);
+        }
+        const text = await r.text();
+        if (!text) {
+          return null;
+        }
+        return JSON.parse(text);
+      })
+      .then(data => {
+        setStats(data);
+      })
       .catch(err => {
         console.error('Error fetching stats:', err);
+        setStats(null);
       });
   }, []);
 
@@ -225,7 +259,7 @@ const WastePage = () => {
           >
             All
           </button>
-          {categories.map(cat => (
+          {Array.isArray(categories) && categories.map(cat => (
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.name.toLowerCase().split(' ')[0])}
@@ -297,7 +331,7 @@ const WastePage = () => {
                     <svg className="w-4 h-4 mr-2 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
-                    {listing.seller}
+                    {listing.seller || 'Anonymous'}
                   </p>
                 </div>
                 
@@ -370,40 +404,44 @@ const WastePage = () => {
                 <div className="space-y-4">
                   <div className="flex items-center p-4 bg-gray-50 rounded-xl">
                     <div className="w-12 h-12 bg-primary-500 rounded-full flex items-center justify-center text-white text-lg font-medium mr-4">
-                      {selectedListing.seller.charAt(0)}
+                      {selectedListing.seller?.charAt(0) || '?'}
                     </div>
                     <div>
-                      <p className="font-medium text-charcoal">{selectedListing.seller}</p>
+                      <p className="font-medium text-charcoal">{selectedListing.seller || 'Unknown Seller'}</p>
                       <p className="text-sm text-gray-500">Verified Seller</p>
                     </div>
                   </div>
 
                   <div className="space-y-3">
-                    <a 
-                      href={`mailto:${selectedListing.sellerEmail}`}
-                      className="flex items-center p-4 border border-gray-200 rounded-xl hover:bg-primary-50 hover:border-primary-200 transition-colors"
-                    >
-                      <svg className="w-5 h-5 text-primary-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
-                      <div>
-                        <p className="text-sm text-gray-500">Email</p>
-                        <p className="font-medium text-primary-600">{selectedListing.sellerEmail}</p>
-                      </div>
-                    </a>
+                    {selectedListing.sellerEmail && (
+                      <a 
+                        href={`mailto:${selectedListing.sellerEmail}`}
+                        className="flex items-center p-4 border border-gray-200 rounded-xl hover:bg-primary-50 hover:border-primary-200 transition-colors"
+                      >
+                        <svg className="w-5 h-5 text-primary-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        <div>
+                          <p className="text-sm text-gray-500">Email</p>
+                          <p className="font-medium text-primary-600">{selectedListing.sellerEmail}</p>
+                        </div>
+                      </a>
+                    )}
 
-                    <a 
-                      href={`tel:${selectedListing.sellerPhone}`}
-                      className="flex items-center p-4 border border-gray-200 rounded-xl hover:bg-primary-50 hover:border-primary-200 transition-colors"
-                    >
-                      <svg className="w-5 h-5 text-primary-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                      </svg>
-                      <div>
-                        <p className="text-sm text-gray-500">Phone</p>
-                        <p className="font-medium text-primary-600">{selectedListing.sellerPhone}</p>
-                      </div>
-                    </a>
+                    {selectedListing.sellerPhone && (
+                      <a 
+                        href={`tel:${selectedListing.sellerPhone}`}
+                        className="flex items-center p-4 border border-gray-200 rounded-xl hover:bg-primary-50 hover:border-primary-200 transition-colors"
+                      >
+                        <svg className="w-5 h-5 text-primary-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                        </svg>
+                        <div>
+                          <p className="text-sm text-gray-500">Phone</p>
+                          <p className="font-medium text-primary-600">{selectedListing.sellerPhone}</p>
+                        </div>
+                      </a>
+                    )}
 
                     <div className="flex items-start p-4 border border-gray-200 rounded-xl">
                       <svg className="w-5 h-5 text-primary-500 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

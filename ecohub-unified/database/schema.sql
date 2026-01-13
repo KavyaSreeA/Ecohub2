@@ -2,9 +2,15 @@
 -- Multi-role authentication system with Users, Businesses, Communities, and Admins
 
 -- =============================================
+-- CREATE DATABASE IF NOT EXISTS
+-- =============================================
+CREATE DATABASE IF NOT EXISTS ecohub CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE ecohub;
+
+-- =============================================
 -- USERS TABLE (Core authentication)
 -- =============================================
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id VARCHAR(36) PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
@@ -22,7 +28,7 @@ CREATE TABLE users (
 -- =============================================
 -- BUSINESS PROFILES (For business accounts)
 -- =============================================
-CREATE TABLE business_profiles (
+CREATE TABLE IF NOT EXISTS business_profiles (
     id VARCHAR(36) PRIMARY KEY,
     user_id VARCHAR(36) NOT NULL UNIQUE,
     business_name VARCHAR(255) NOT NULL,
@@ -50,7 +56,7 @@ CREATE TABLE business_profiles (
 -- =============================================
 -- COMMUNITY PROFILES (For NGOs, Groups)
 -- =============================================
-CREATE TABLE community_profiles (
+CREATE TABLE IF NOT EXISTS community_profiles (
     id VARCHAR(36) PRIMARY KEY,
     user_id VARCHAR(36) NOT NULL UNIQUE,
     organization_name VARCHAR(255) NOT NULL,
@@ -77,7 +83,7 @@ CREATE TABLE community_profiles (
 -- =============================================
 -- CONSERVATION CAMPAIGNS
 -- =============================================
-CREATE TABLE campaigns (
+CREATE TABLE IF NOT EXISTS campaigns (
     id VARCHAR(36) PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     description TEXT NOT NULL,
@@ -102,7 +108,7 @@ CREATE TABLE campaigns (
 -- =============================================
 -- CONSERVATION EVENTS
 -- =============================================
-CREATE TABLE events (
+CREATE TABLE IF NOT EXISTS events (
     id VARCHAR(36) PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     description TEXT NOT NULL,
@@ -129,7 +135,7 @@ CREATE TABLE events (
 -- =============================================
 -- EVENT REGISTRATIONS
 -- =============================================
-CREATE TABLE event_registrations (
+CREATE TABLE IF NOT EXISTS event_registrations (
     id VARCHAR(36) PRIMARY KEY,
     event_id VARCHAR(36) NOT NULL,
     user_id VARCHAR(36) NOT NULL,
@@ -145,7 +151,7 @@ CREATE TABLE event_registrations (
 -- =============================================
 -- FORUM POSTS
 -- =============================================
-CREATE TABLE forum_posts (
+CREATE TABLE IF NOT EXISTS forum_posts (
     id VARCHAR(36) PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
@@ -166,7 +172,7 @@ CREATE TABLE forum_posts (
 -- =============================================
 -- FORUM COMMENTS
 -- =============================================
-CREATE TABLE forum_comments (
+CREATE TABLE IF NOT EXISTS forum_comments (
     id VARCHAR(36) PRIMARY KEY,
     post_id VARCHAR(36) NOT NULL,
     author_id VARCHAR(36) NOT NULL,
@@ -184,7 +190,7 @@ CREATE TABLE forum_comments (
 -- =============================================
 -- ENERGY PROVIDERS (Business listings)
 -- =============================================
-CREATE TABLE energy_providers (
+CREATE TABLE IF NOT EXISTS energy_providers (
     id VARCHAR(36) PRIMARY KEY,
     business_id VARCHAR(36) NOT NULL,
     energy_type ENUM('solar', 'wind', 'hydro', 'geothermal', 'biomass') NOT NULL,
@@ -210,7 +216,7 @@ CREATE TABLE energy_providers (
 -- =============================================
 -- WASTE LISTINGS
 -- =============================================
-CREATE TABLE waste_listings (
+CREATE TABLE IF NOT EXISTS waste_listings (
     id VARCHAR(36) PRIMARY KEY,
     seller_id VARCHAR(36) NOT NULL,
     title VARCHAR(255) NOT NULL,
@@ -237,7 +243,7 @@ CREATE TABLE waste_listings (
 -- =============================================
 -- WASTE INQUIRIES (Buyer interest)
 -- =============================================
-CREATE TABLE waste_inquiries (
+CREATE TABLE IF NOT EXISTS waste_inquiries (
     id VARCHAR(36) PRIMARY KEY,
     listing_id VARCHAR(36) NOT NULL,
     buyer_id VARCHAR(36) NOT NULL,
@@ -253,7 +259,7 @@ CREATE TABLE waste_inquiries (
 -- =============================================
 -- TRANSPORT VEHICLES (For sharing/fleet)
 -- =============================================
-CREATE TABLE vehicles (
+CREATE TABLE IF NOT EXISTS vehicles (
     id VARCHAR(36) PRIMARY KEY,
     owner_id VARCHAR(36) NOT NULL,
     vehicle_type ENUM('e_bike', 'e_scooter', 'e_auto', 'e_car', 'bicycle', 'carpool') NOT NULL,
@@ -280,7 +286,7 @@ CREATE TABLE vehicles (
 -- =============================================
 -- RIDE BOOKINGS
 -- =============================================
-CREATE TABLE ride_bookings (
+CREATE TABLE IF NOT EXISTS ride_bookings (
     id VARCHAR(36) PRIMARY KEY,
     rider_id VARCHAR(36) NOT NULL,
     vehicle_id VARCHAR(36) NOT NULL,
@@ -305,7 +311,7 @@ CREATE TABLE ride_bookings (
 -- =============================================
 -- DONATIONS
 -- =============================================
-CREATE TABLE donations (
+CREATE TABLE IF NOT EXISTS donations (
     id VARCHAR(36) PRIMARY KEY,
     donor_id VARCHAR(36),
     donor_name VARCHAR(255),
@@ -329,7 +335,7 @@ CREATE TABLE donations (
 -- =============================================
 -- USER ACTIVITY LOG (For analytics)
 -- =============================================
-CREATE TABLE activity_logs (
+CREATE TABLE IF NOT EXISTS activity_logs (
     id VARCHAR(36) PRIMARY KEY,
     user_id VARCHAR(36),
     action VARCHAR(100) NOT NULL,
@@ -345,7 +351,7 @@ CREATE TABLE activity_logs (
 -- =============================================
 -- ADMIN ACTIONS LOG
 -- =============================================
-CREATE TABLE admin_actions (
+CREATE TABLE IF NOT EXISTS admin_actions (
     id VARCHAR(36) PRIMARY KEY,
     admin_id VARCHAR(36) NOT NULL,
     action_type ENUM('approve', 'reject', 'suspend', 'activate', 'delete', 'modify', 'verify') NOT NULL,
@@ -361,7 +367,7 @@ CREATE TABLE admin_actions (
 -- =============================================
 -- NOTIFICATIONS
 -- =============================================
-CREATE TABLE notifications (
+CREATE TABLE IF NOT EXISTS notifications (
     id VARCHAR(36) PRIMARY KEY,
     user_id VARCHAR(36) NOT NULL,
     title VARCHAR(255) NOT NULL,
@@ -377,7 +383,7 @@ CREATE TABLE notifications (
 -- =============================================
 -- USER IMPACT METRICS
 -- =============================================
-CREATE TABLE user_impact (
+CREATE TABLE IF NOT EXISTS user_impact (
     id VARCHAR(36) PRIMARY KEY,
     user_id VARCHAR(36) NOT NULL UNIQUE,
     total_co2_saved DECIMAL(12, 2) DEFAULT 0, -- in kg
@@ -396,7 +402,7 @@ CREATE TABLE user_impact (
 -- =============================================
 -- ENERGY SOURCES (Static reference data)
 -- =============================================
-CREATE TABLE energy_sources (
+CREATE TABLE IF NOT EXISTS energy_sources (
     id VARCHAR(36) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     icon VARCHAR(10),
@@ -412,7 +418,7 @@ CREATE TABLE energy_sources (
 -- =============================================
 -- ENERGY PROJECTS (Static reference data)
 -- =============================================
-CREATE TABLE energy_projects (
+CREATE TABLE IF NOT EXISTS energy_projects (
     id VARCHAR(36) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     type ENUM('solar', 'wind', 'hydro', 'geothermal', 'biomass') NOT NULL,
@@ -429,7 +435,7 @@ CREATE TABLE energy_projects (
 -- =============================================
 -- ENERGY COMPANIES (Static reference data)
 -- =============================================
-CREATE TABLE energy_companies (
+CREATE TABLE IF NOT EXISTS energy_companies (
     id VARCHAR(36) PRIMARY KEY,
     energy_source_name VARCHAR(255) NOT NULL UNIQUE,
     company_name VARCHAR(255) NOT NULL,
@@ -448,7 +454,7 @@ CREATE TABLE energy_companies (
 -- =============================================
 -- TRANSPORT ROUTES (Static reference data)
 -- =============================================
-CREATE TABLE transport_routes (
+CREATE TABLE IF NOT EXISTS transport_routes (
     id VARCHAR(36) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     type ENUM('bus', 'metro', 'bike', 'shuttle', 'carpool') NOT NULL,
@@ -465,7 +471,7 @@ CREATE TABLE transport_routes (
 -- =============================================
 -- WASTE CATEGORIES (Static reference data)
 -- =============================================
-CREATE TABLE waste_categories (
+CREATE TABLE IF NOT EXISTS waste_categories (
     id VARCHAR(36) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     icon VARCHAR(10),

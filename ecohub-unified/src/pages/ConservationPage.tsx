@@ -76,13 +76,71 @@ const ConservationPage = () => {
 
   useEffect(() => {
     Promise.all([
-      fetch('/api/conservation/campaigns').then(r => r.json()),
-      fetch('/api/conservation/forum').then(r => r.json()),
-      fetch('/api/conservation/events').then(r => r.json())
+      fetch('/api/conservation/campaigns')
+        .then(async r => {
+          if (!r.ok) {
+            throw new Error(`HTTP error! status: ${r.status}`);
+          }
+          const text = await r.text();
+          if (!text) {
+            return [];
+          }
+          return JSON.parse(text);
+        })
+        .then(data => Array.isArray(data) ? data : [])
+        .catch(err => {
+          console.error('Error fetching campaigns:', err);
+          return [];
+        }),
+      fetch('/api/conservation/forum')
+        .then(async r => {
+          if (!r.ok) {
+            throw new Error(`HTTP error! status: ${r.status}`);
+          }
+          const text = await r.text();
+          if (!text) {
+            return [];
+          }
+          return JSON.parse(text);
+        })
+        .then(data => Array.isArray(data) ? data : [])
+        .catch(err => {
+          console.error('Error fetching forum posts:', err);
+          return [];
+        }),
+      fetch('/api/conservation/campaigns')
+        .then(async r => {
+          if (!r.ok) {
+            throw new Error(`HTTP error! status: ${r.status}`);
+          }
+          const text = await r.text();
+          if (!text) {
+            return [];
+          }
+          return JSON.parse(text);
+        })
+        .then(data => Array.isArray(data) ? data : [])
+        .catch(err => {
+          console.error('Error fetching events:', err);
+          return [];
+        })
     ]).then(([campaignsData, forumData, eventsData]) => {
-      setCampaigns(campaignsData);
-      setForumPosts(forumData);
-      setEvents(eventsData);
+      // Ensure campaigns data is properly formatted with numbers
+      const formattedCampaigns = Array.isArray(campaignsData) 
+        ? campaignsData.map(campaign => ({
+            ...campaign,
+            goal: typeof campaign.goal === 'string' ? parseFloat(campaign.goal) : (campaign.goal || 0),
+            raised: typeof campaign.raised === 'string' ? parseFloat(campaign.raised) : (campaign.raised || 0)
+          }))
+        : [];
+      
+      console.log('Campaigns data received:', formattedCampaigns);
+      setCampaigns(formattedCampaigns);
+      console.log("Formatted campaigns: " +formattedCampaigns);
+      console.log("Campaigns: " + campaigns);
+      console.log("Campaigns data: " + campaignsData);
+      setForumPosts(Array.isArray(forumData) ? forumData : []);
+      setEvents(Array.isArray(eventsData) ? eventsData : []);
     });
   }, []);
 
@@ -153,7 +211,8 @@ const ConservationPage = () => {
         {/* Campaigns Tab */}
         {activeTab === 'campaigns' && (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {campaigns.map((campaign, index) => (
+            {Array.isArray(campaigns) && campaigns.length > 0 ? (
+              campaigns.map((campaign, index) => (
               <motion.div
                 key={campaign.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -204,14 +263,19 @@ const ConservationPage = () => {
                   </div>
                 </div>
               </motion.div>
-            ))}
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <p className="text-gray-500 text-lg">No campaigns available at the moment.</p>
+              </div>
+            )}
           </div>
         )}
 
         {/* Events Tab */}
         {activeTab === 'events' && (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {events.map((event, index) => (
+            {Array.isArray(events) && events.map((event, index) => (
               <motion.div
                 key={event.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -257,7 +321,7 @@ const ConservationPage = () => {
         {/* Forum Tab */}
         {activeTab === 'forum' && (
           <div className="space-y-4">
-            {forumPosts.map((post, index) => (
+            {Array.isArray(forumPosts) && forumPosts.map((post, index) => (
               <motion.div
                 key={post.id}
                 initial={{ opacity: 0, y: 10 }}

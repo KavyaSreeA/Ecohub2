@@ -1,17 +1,23 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
-// Verify JWT token
+// Verify JWT token - reads from cookie or Authorization header
 const authenticateToken = async (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  // Try to get token from cookie first (more secure), then from Authorization header
+  let token = req.cookies?.ecohub_token;
+  
+  if (!token) {
+    const authHeader = req.headers['authorization'];
+    token = authHeader && authHeader.split(' ')[1];
+  }
 
   if (!token) {
     return res.status(401).json({ message: 'Access token required' });
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'ecohub-secret-key');
+    const jwtSecret = process.env.JWT_SECRET || 'ecohub-secret-key-fallback-not-secure';
+    const decoded = jwt.verify(token, jwtSecret);
     const user = await User.findById(decoded.userId);
 
     if (!user) {
@@ -34,12 +40,18 @@ const authenticateToken = async (req, res, next) => {
 
 // Optional authentication (for public routes that can have enhanced features for logged-in users)
 const optionalAuth = async (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  // Try to get token from cookie first, then from Authorization header
+  let token = req.cookies?.ecohub_token;
+  
+  if (!token) {
+    const authHeader = req.headers['authorization'];
+    token = authHeader && authHeader.split(' ')[1];
+  }
 
   if (token) {
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'ecohub-secret-key');
+      const jwtSecret = process.env.JWT_SECRET || 'ecohub-secret-key-fallback-not-secure';
+      const decoded = jwt.verify(token, jwtSecret);
       const user = await User.findById(decoded.userId);
       if (user && user.status !== 'suspended') {
         req.user = user;

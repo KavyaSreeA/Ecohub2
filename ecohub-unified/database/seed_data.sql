@@ -1,10 +1,13 @@
 -- Seed data for static reference tables
 -- This file populates tables with data that was previously hardcoded
+-- Safe to run multiple times - uses INSERT IGNORE to prevent duplicates
+
+USE ecohub;
 
 -- =============================================
 -- ENERGY SOURCES
 -- =============================================
-INSERT INTO energy_sources (id, name, icon, description, capacity, growth, image_url, display_order) VALUES
+INSERT IGNORE INTO energy_sources (id, name, icon, description, capacity, growth, image_url, display_order) VALUES
 ('energy-source-1', 'Solar Power', '☀️', 'Harness the power of the sun', '500 MW', '+15%', 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=400&q=80', 1),
 ('energy-source-2', 'Wind Energy', '💨', 'Clean energy from wind turbines', '350 MW', '+22%', 'https://images.unsplash.com/photo-1532601224476-15c79f2f7a51?w=400&q=80', 2),
 ('energy-source-3', 'Hydroelectric', '💧', 'Power from flowing water', '800 MW', '+8%', 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=400&q=80', 3),
@@ -13,7 +16,7 @@ INSERT INTO energy_sources (id, name, icon, description, capacity, growth, image
 -- =============================================
 -- ENERGY PROJECTS
 -- =============================================
-INSERT INTO energy_projects (id, name, type, location, capacity, status, completion_date, image_url, display_order) VALUES
+INSERT IGNORE INTO energy_projects (id, name, type, location, capacity, status, completion_date, image_url, display_order) VALUES
 ('energy-project-1', 'Desert Sun Solar Farm', 'solar', 'Nevada, USA', '250 MW', 'operational', '2023-06-15', 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=400&q=80', 1),
 ('energy-project-2', 'Coastal Wind Project', 'wind', 'Denmark', '180 MW', 'construction', '2024-08-01', 'https://images.unsplash.com/photo-1532601224476-15c79f2f7a51?w=400&q=80', 2),
 ('energy-project-3', 'Mountain Hydro Station', 'hydro', 'Norway', '400 MW', 'operational', '2022-03-20', 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=400&q=80', 3),
@@ -22,7 +25,7 @@ INSERT INTO energy_projects (id, name, type, location, capacity, status, complet
 -- =============================================
 -- ENERGY COMPANIES
 -- =============================================
-INSERT INTO energy_companies (id, energy_source_name, company_name, description, address, phone, email, website, founded, employees, image_url) VALUES
+INSERT IGNORE INTO energy_companies (id, energy_source_name, company_name, description, address, phone, email, website, founded, employees, image_url) VALUES
 ('energy-company-1', 'Solar Power', 'SunBright Energy Solutions', 'Leading provider of residential and commercial solar panel installations. We help homes and businesses harness the power of the sun with cutting-edge photovoltaic technology.', '123 Solar Avenue, Bangalore, Karnataka 560001', '+91 80 4567 8901', 'contact@sunbright.energy', 'www.sunbright.energy', '2015', '500+', 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=800&q=80'),
 ('energy-company-2', 'Wind Energy', 'WindForce Renewables', 'Pioneering wind energy solutions across India. Our wind farms generate clean electricity for millions of households while creating sustainable jobs.', '456 Wind Mill Road, Chennai, Tamil Nadu 600001', '+91 44 5678 9012', 'info@windforce.in', 'www.windforce.in', '2012', '750+', 'https://images.unsplash.com/photo-1532601224476-15c79f2f7a51?w=800&q=80'),
 ('energy-company-3', 'Hydroelectric', 'HydroPower India Ltd.', 'Harnessing the power of water to generate sustainable electricity. Our hydroelectric plants provide reliable, renewable energy to communities across the nation.', '789 Dam View Road, Dehradun, Uttarakhand 248001', '+91 135 234 5678', 'contact@hydropowerindia.com', 'www.hydropowerindia.com', '2008', '1200+', 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=800&q=80'),
@@ -31,7 +34,7 @@ INSERT INTO energy_companies (id, energy_source_name, company_name, description,
 -- =============================================
 -- TRANSPORT ROUTES
 -- =============================================
-INSERT INTO transport_routes (id, name, type, from_location, to_location, duration, co2_saved, frequency, display_order) VALUES
+INSERT IGNORE INTO transport_routes (id, name, type, from_location, to_location, duration, co2_saved, frequency, display_order) VALUES
 ('route-1', 'Downtown Express', 'bus', 'Central Station', 'Business District', '25 min', '2.5 kg', 'Every 10 min', 1),
 ('route-2', 'Green Line Metro', 'metro', 'Airport', 'City Center', '35 min', '4.2 kg', 'Every 5 min', 2),
 ('route-3', 'Bike Share Route', 'bike', 'University', 'Tech Park', '20 min', '3.0 kg', 'On-demand', 3),
@@ -40,7 +43,7 @@ INSERT INTO transport_routes (id, name, type, from_location, to_location, durati
 -- =============================================
 -- WASTE CATEGORIES
 -- =============================================
-INSERT INTO waste_categories (id, name, icon, count, display_order) VALUES
+INSERT IGNORE INTO waste_categories (id, name, icon, count, display_order) VALUES
 ('waste-cat-1', 'Paper & Cardboard', '📄', 156, 1),
 ('waste-cat-2', 'Metals', '🔧', 89, 2),
 ('waste-cat-3', 'Plastics', '♻️', 234, 3),

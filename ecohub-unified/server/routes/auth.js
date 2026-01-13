@@ -73,20 +73,34 @@ router.post('/register', async (req, res) => {
       await CommunityProfile.create(user.id, communityProfile);
     }
 
-    // Generate token
+    // Generate token with secure JWT secret
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret || jwtSecret.length < 32) {
+      console.warn('⚠️  WARNING: JWT_SECRET is not set or too short. Using fallback (INSECURE for production).');
+    }
     const token = jwt.sign(
       { userId: user.id, role: user.role },
-      process.env.JWT_SECRET || 'ecohub-secret-key',
+      jwtSecret || 'ecohub-secret-key-fallback-not-secure',
       { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
     );
 
     // Get user with profile
     const fullUser = await User.getWithProfile(user.id);
 
+    // Set httpOnly cookie for security
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production' || process.env.COOKIE_SECURE === 'true',
+      sameSite: process.env.COOKIE_SAME_SITE || 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
+      path: '/'
+    };
+    res.cookie('ecohub_token', token, cookieOptions);
+
     res.status(201).json({
       message: 'Registration successful',
       success: true,
-      token,
+      token, // Still return token for backward compatibility (localStorage)
       user: {
         id: fullUser.id,
         name: fullUser.name,
@@ -134,20 +148,34 @@ router.post('/login', authLimiter, async (req, res) => {
     // Update last login
     await User.updateLastLogin(user.id);
 
-    // Generate token
+    // Generate token with secure JWT secret
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret || jwtSecret.length < 32) {
+      console.warn('⚠️  WARNING: JWT_SECRET is not set or too short. Using fallback (INSECURE for production).');
+    }
     const token = jwt.sign(
       { userId: user.id, role: user.role },
-      process.env.JWT_SECRET || 'ecohub-secret-key',
+      jwtSecret || 'ecohub-secret-key-fallback-not-secure',
       { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
     );
 
     // Get user with profile
     const fullUser = await User.getWithProfile(user.id);
 
+    // Set httpOnly cookie for security
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production' || process.env.COOKIE_SECURE === 'true',
+      sameSite: process.env.COOKIE_SAME_SITE || 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
+      path: '/'
+    };
+    res.cookie('ecohub_token', token, cookieOptions);
+
     res.json({
       message: 'Login successful',
-      token,
-      success:true,
+      token, // Still return token for backward compatibility (localStorage)
+      success: true,
       user: {
         id: fullUser.id,
         name: fullUser.name,
@@ -171,6 +199,7 @@ router.get('/verify', authenticateToken, async (req, res) => {
     const fullUser = await User.getWithProfile(req.user.id);
     
     res.json({
+      success: true, // Fix: Add success flag for frontend
       user: {
         id: fullUser.id,
         name: fullUser.name,
@@ -186,7 +215,7 @@ router.get('/verify', authenticateToken, async (req, res) => {
     });
   } catch (error) {
     console.error('Verify error:', error);
-    res.status(500).json({ message: 'Failed to verify token' });
+    res.status(500).json({ success: false, message: 'Failed to verify token' });
   }
 });
 
@@ -258,11 +287,16 @@ router.put('/password', authenticateToken, async (req, res) => {
   }
 });
 
-// Logout (client-side, just for logging)
-router.post('/logout', authenticateToken, (req, res) => {
-  // In a stateless JWT system, logout is handled client-side
-  // This endpoint can be used for logging/analytics
-  res.json({ message: 'Logged out successfully' });
+// Logout - clear cookies and token
+router.post('/logout', (req, res) => {
+  // Clear the httpOnly cookie
+  res.clearCookie('ecohub_token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production' || process.env.COOKIE_SECURE === 'true',
+    sameSite: process.env.COOKIE_SAME_SITE || 'lax',
+    path: '/'
+  });
+  res.json({ success: true, message: 'Logged out successfully' });
 });
 
 export default router;

@@ -149,32 +149,51 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return rolePermissions[user.role]?.includes(permission) || false;
   };
 
-  // Verify token on mount
+  // Verify token on mount - works with cookies (httpOnly) or localStorage (fallback)
   useEffect(() => {
     const verifyToken = async () => {
       const storedToken = localStorage.getItem('ecohub_token');
-      if (storedToken) {
-        try {
-          const response = await fetch(`${API_URL}/verify`, {
-            headers: {
-              'Authorization': `Bearer ${storedToken}`,
-            },
-          });
+      
+      try {
+        // Try to verify using cookies (preferred) or Authorization header (fallback)
+        const headers: HeadersInit = {};
+        if (storedToken) {
+          headers['Authorization'] = `Bearer ${storedToken}`;
+        }
+        
+        const response = await fetch(`${API_URL}/verify`, {
+          credentials: 'include', // Important: Send cookies with request
+          headers,
+        });
+        
+        if (response.ok) {
           const data = await response.json();
-          if (data.success) {
+          if (data.success && data.user) {
             setUser(data.user);
-            setToken(storedToken);
+            // Keep token in state if we have it, but cookies are primary
+            if (storedToken) {
+              setToken(storedToken);
+            }
           } else {
+            // Token invalid, clear everything
             localStorage.removeItem('ecohub_token');
             setToken(null);
+            setUser(null);
           }
-        } catch (error) {
-          console.error('Token verification failed:', error);
+        } else {
+          // Not authenticated, clear everything
           localStorage.removeItem('ecohub_token');
           setToken(null);
+          setUser(null);
         }
+      } catch (error) {
+        console.error('Token verification failed:', error);
+        localStorage.removeItem('ecohub_token');
+        setToken(null);
+        setUser(null);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
 
     verifyToken();
@@ -182,17 +201,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Refresh user data from server
   const refreshUser = async (): Promise<void> => {
-    if (!token) return;
-    
     try {
+      const headers: HeadersInit = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`${API_URL}/verify`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include', // Send cookies
+        headers,
       });
-      const data = await response.json();
-      if (data.success) {
-        setUser(data.user);
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.user) {
+          setUser(data.user);
+        }
       }
     } catch (error) {
       console.error('Failed to refresh user:', error);
@@ -203,6 +227,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       const response = await fetch(`${API_URL}/login`, {
         method: 'POST',
+        credentials: 'include', // Important: Send and receive cookies
         headers: {
           'Content-Type': 'application/json',
         },
@@ -213,8 +238,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       if (data.success) {
         setUser(data.user);
-        setToken(data.token);
-        localStorage.setItem('ecohub_token', data.token);
+        // Token is now stored in httpOnly cookie, but keep in localStorage for backward compatibility
+        if (data.token) {
+          setToken(data.token);
+          localStorage.setItem('ecohub_token', data.token);
+        }
         return { success: true, message: 'Login successful!' };
       } else {
         return { success: false, message: data.message || 'Login failed' };
@@ -229,6 +257,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       const response = await fetch(`${API_URL}/register`, {
         method: 'POST',
+        credentials: 'include', // Important: Send and receive cookies
         headers: {
           'Content-Type': 'application/json',
         },
@@ -239,8 +268,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       if (result.success) {
         setUser(result.user);
-        setToken(result.token);
-        localStorage.setItem('ecohub_token', result.token);
+        // Token is now stored in httpOnly cookie, but keep in localStorage for backward compatibility
+        if (result.token) {
+          setToken(result.token);
+          localStorage.setItem('ecohub_token', result.token);
+        }
         return { success: true, message: 'Registration successful!' };
       } else {
         return { success: false, message: result.message || 'Registration failed' };
@@ -251,10 +283,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem('ecohub_token');
+  const logout = async () => {
+    try {
+      // Call backend logout to clear httpOnly cookie
+      await fetch(`${API_URL}/logout`, {
+        method: 'POST',
+        credentials: 'include', // Send cookies
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      // Clear frontend state regardless of backend response
+      setUser(null);
+      setToken(null);
+      localStorage.removeItem('ecohub_token');
+    }
   };
 
   const updateUser = (userData: Partial<User>) => {
