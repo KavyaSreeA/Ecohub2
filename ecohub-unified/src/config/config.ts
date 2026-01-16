@@ -1,68 +1,82 @@
 // EcoHub Platform Configuration
-// All API keys are MOCK keys for development/demo purposes
+// API keys are loaded from environment variables for security
+// In development, fallback values are used if env vars are not set
+
+// Helper to get env variable (works in both Vite and Node.js)
+const getEnv = (key: string, fallback: string = ''): string => {
+  // Vite frontend (import.meta.env)
+  if (typeof import.meta !== 'undefined' && import.meta.env) {
+    return (import.meta.env as Record<string, string>)[key] || fallback;
+  }
+  // Node.js backend (process.env)
+  if (typeof process !== 'undefined' && process.env) {
+    return process.env[key] || fallback;
+  }
+  return fallback;
+};
 
 export const config = {
   // ==================== AUTHENTICATION APIs ====================
   auth: {
     // Firebase Authentication
     firebase: {
-      apiKey: 'AIzaSyCvRKfV2Kq6RcxVBK4KhMsl9w2R1pvxvsI',
-      authDomain: 'ecohub-c936c.firebaseapp.com',
-      projectId: 'ecohub-c936c',
-      storageBucket: 'ecohub-c936c.appspot.com',
-      messagingSenderId: '951878074060',
-      appId: '1:951878074060:web:91ef9398b297f518fc8c69',
+      apiKey: getEnv('VITE_FIREBASE_API_KEY', 'AIzaSyCvRKfV2Kq6RcxVBK4KhMsl9w2R1pvxvsI'),
+      authDomain: getEnv('VITE_FIREBASE_AUTH_DOMAIN', 'ecohub-c936c.firebaseapp.com'),
+      projectId: getEnv('VITE_FIREBASE_PROJECT_ID', 'ecohub-c936c'),
+      storageBucket: getEnv('VITE_FIREBASE_STORAGE_BUCKET', 'ecohub-c936c.appspot.com'),
+      messagingSenderId: getEnv('VITE_FIREBASE_MESSAGING_SENDER_ID', '951878074060'),
+      appId: getEnv('VITE_FIREBASE_APP_ID', '1:951878074060:web:91ef9398b297f518fc8c69'),
       enabled: true,
     },
     // Auth0 Alternative
     auth0: {
-      domain: 'dev-24kylvqlbsnnr126.us.auth0.com',
-      clientId: 'uWAMs192KrLSdTEptu0talXLiEeBSh2J',
+      domain: getEnv('VITE_AUTH0_DOMAIN', 'dev-24kylvqlbsnnr126.us.auth0.com'),
+      clientId: getEnv('VITE_AUTH0_CLIENT_ID', 'uWAMs192KrLSdTEptu0talXLiEeBSh2J'),
       audience: 'https://api.ecohub.com',
       enabled: false,
     },
     // JWT Configuration (for backend API calls)
     jwt: {
-      secret: 'ecohub-jwt-secret-key-2026',
+      secret: getEnv('JWT_SECRET', 'ecohub-jwt-secret-key-2026'),
       expiresIn: '7d',
     },
   },
 
   // ==================== DATABASE APIs ====================
   database: {
-    // MongoDB Atlas (Mock)
+    // MongoDB Atlas
     mongodb: {
-      uri: 'mongodb+srv://ecohub-demo:MOCK_PASSWORD@cluster0.mongodb.net/ecohub',
+      uri: getEnv('MONGODB_URI', 'mongodb+srv://ecohub-demo:MOCK_PASSWORD@cluster0.mongodb.net/ecohub'),
       dbName: 'ecohub',
       enabled: true,
     },
-    // Firebase Firestore (Mock)
+    // Firebase Firestore
     firestore: {
       projectId: 'ecohub-demo',
-      apiKey: 'MOCK_Firestore_Key_EcoHub2026',
+      apiKey: getEnv('VITE_FIRESTORE_API_KEY', ''),
       enabled: false,
     },
-    // Supabase Alternative (Mock)
+    // Supabase Alternative
     supabase: {
-      url: 'https://ecohub-demo.supabase.co',
-      anonKey: 'MOCK_Supabase_Anon_Key_EcoHub2026',
+      url: getEnv('VITE_SUPABASE_URL', ''),
+      anonKey: getEnv('VITE_SUPABASE_ANON_KEY', ''),
       enabled: false,
     },
   },
 
   // ==================== FORUM & COMMUNITY APIs ====================
   forum: {
-    // Discourse API (Mock)
+    // Discourse API
     discourse: {
       baseUrl: 'https://forum.ecohub.com',
-      apiKey: 'MOCK_Discourse_API_Key_EcoHub2026',
+      apiKey: getEnv('DISCOURSE_API_KEY', ''),
       apiUsername: 'system',
       enabled: true,
     },
     // Stream Chat for Real-time
     streamChat: {
-      apiKey: 'ueapfn2bgxzp',
-      apiSecret: 'pcxxwbhywkk73skyvbum68eatdctpg2nppdjxmvtk36etanv8x7zsadfa7hkn2tk',
+      apiKey: getEnv('VITE_STREAM_CHAT_API_KEY', 'ueapfn2bgxzp'),
+      apiSecret: getEnv('STREAM_CHAT_API_SECRET', 'pcxxwbhywkk73skyvbum68eatdctpg2nppdjxmvtk36etanv8x7zsadfa7hkn2tk'),
       enabled: true,
     },
   },
@@ -71,7 +85,7 @@ export const config = {
   energy: {
     // NREL (National Renewable Energy Laboratory) API
     nrel: {
-      apiKey: 'MOCK_NREL_API_Key_EcoHub2026',
+      apiKey: getEnv('VITE_NREL_API_KEY', 'DEMO_KEY'),
       baseUrl: 'https://developer.nrel.gov/api',
       endpoints: {
         pvWatts: '/pvwatts/v6',
@@ -82,7 +96,7 @@ export const config = {
     },
     // OpenWeatherMap for Solar Irradiance
     openWeather: {
-      apiKey: 'b0763003e31fa4d63b684e4c162bfe0d',
+      apiKey: getEnv('VITE_OPENWEATHER_API_KEY', 'b0763003e31fa4d63b684e4c162bfe0d'),
       baseUrl: 'https://api.openweathermap.org/data/2.5',
       endpoints: {
         solar: '/solar_radiation',
@@ -91,9 +105,9 @@ export const config = {
       },
       enabled: true,
     },
-    // Solcast Solar Forecasting (Mock)
+    // Solcast Solar Forecasting
     solcast: {
-      apiKey: 'MOCK_Solcast_API_Key_EcoHub2026',
+      apiKey: getEnv('SOLCAST_API_KEY', ''),
       baseUrl: 'https://api.solcast.com.au',
       enabled: false,
     },
@@ -103,7 +117,7 @@ export const config = {
   maps: {
     // Google Maps Platform
     google: {
-      apiKey: 'AIzaSyD-e_4ZAS_9BzyGArjA6rsuC4y_QnwxjHs',
+      apiKey: getEnv('VITE_GOOGLE_MAPS_API_KEY', 'AIzaSyD-e_4ZAS_9BzyGArjA6rsuC4y_QnwxjHs'),
       services: {
         maps: true,
         places: true,
@@ -113,15 +127,15 @@ export const config = {
       },
       enabled: true,
     },
-    // Mapbox Alternative (Mock)
+    // Mapbox Alternative
     mapbox: {
-      accessToken: 'MOCK_Mapbox_Token_EcoHub2026',
+      accessToken: getEnv('VITE_MAPBOX_TOKEN', ''),
       style: 'mapbox://styles/mapbox/streets-v11',
       enabled: false,
     },
-    // OpenRouteService (Free Alternative - Mock)
+    // OpenRouteService (Free Alternative)
     openRouteService: {
-      apiKey: 'MOCK_ORS_API_Key_EcoHub2026',
+      apiKey: getEnv('VITE_ORS_API_KEY', ''),
       baseUrl: 'https://api.openrouteservice.org',
       enabled: false,
     },
@@ -130,13 +144,13 @@ export const config = {
   transport: {
     // Transit APIs
     googleTransit: {
-      apiKey: 'MOCK_Google_Transit_Key_EcoHub2026',
+      apiKey: getEnv('VITE_GOOGLE_TRANSIT_KEY', ''),
       enabled: true,
     },
-    // Uber/Lyft Integration (Mock)
+    // Uber/Lyft Integration
     rideshare: {
-      uberClientId: 'MOCK_Uber_Client_Id_EcoHub2026',
-      lyftClientId: 'MOCK_Lyft_Client_Id_EcoHub2026',
+      uberClientId: getEnv('VITE_UBER_CLIENT_ID', ''),
+      lyftClientId: getEnv('VITE_LYFT_CLIENT_ID', ''),
       enabled: false,
     },
     // Bike Share APIs (GBFS)
@@ -151,18 +165,18 @@ export const config = {
     // Geocoding for Location-based listings
     geocoding: {
       provider: 'google',
-      apiKey: 'MOCK_Geocoding_API_Key_EcoHub2026',
+      apiKey: getEnv('VITE_GEOCODING_API_KEY', ''),
       enabled: true,
     },
-    // Earth911 Recycling API (Mock)
+    // Earth911 Recycling API
     earth911: {
-      apiKey: 'MOCK_Earth911_API_Key_EcoHub2026',
+      apiKey: getEnv('EARTH911_API_KEY', ''),
       baseUrl: 'https://api.earth911.com',
       enabled: true,
     },
-    // iRecycle API (Mock)
+    // iRecycle API
     irecycle: {
-      apiKey: 'MOCK_iRecycle_API_Key_EcoHub2026',
+      apiKey: getEnv('IRECYCLE_API_KEY', ''),
       enabled: false,
     },
   },
@@ -171,21 +185,21 @@ export const config = {
   payments: {
     // Stripe
     stripe: {
-      publishableKey: 'pk_test_MOCK_Stripe_Publishable_Key_EcoHub2026',
-      secretKey: 'sk_test_MOCK_Stripe_Secret_Key_EcoHub2026',
-      webhookSecret: 'whsec_MOCK_Stripe_Webhook_Secret_EcoHub2026',
+      publishableKey: getEnv('VITE_STRIPE_PUBLISHABLE_KEY', 'pk_test_MOCK'),
+      secretKey: getEnv('STRIPE_SECRET_KEY', 'sk_test_MOCK'),
+      webhookSecret: getEnv('STRIPE_WEBHOOK_SECRET', ''),
       enabled: true,
     },
     // Razorpay (for India)
     razorpay: {
-      keyId: 'rzp_test_MOCK_Razorpay_Key_EcoHub2026',
-      keySecret: 'MOCK_Razorpay_Secret_EcoHub2026',
+      keyId: getEnv('VITE_RAZORPAY_KEY_ID', 'rzp_test_MOCK'),
+      keySecret: getEnv('RAZORPAY_KEY_SECRET', ''),
       enabled: true,
     },
     // PayPal
     paypal: {
-      clientId: 'MOCK_PayPal_Client_Id_EcoHub2026',
-      clientSecret: 'MOCK_PayPal_Secret_EcoHub2026',
+      clientId: getEnv('VITE_PAYPAL_CLIENT_ID', ''),
+      clientSecret: getEnv('PAYPAL_CLIENT_SECRET', ''),
       mode: 'sandbox',
       enabled: false,
     },
@@ -195,14 +209,14 @@ export const config = {
   ai: {
     // OpenAI for Solar Recommendations
     openai: {
-      apiKey: 'sk-MOCK_OpenAI_API_Key_EcoHub2026',
+      apiKey: getEnv('OPENAI_API_KEY', 'sk-MOCK'),
       model: 'gpt-4',
       maxTokens: 2000,
       enabled: true,
     },
     // Google Gemini Alternative
     gemini: {
-      apiKey: 'MOCK_Google_Gemini_API_Key_EcoHub2026',
+      apiKey: getEnv('GEMINI_API_KEY', ''),
       model: 'gemini-pro',
       enabled: false,
     },
@@ -218,7 +232,7 @@ export const config = {
   email: {
     // SendGrid
     sendgrid: {
-      apiKey: 'SG.MOCK_SendGrid_API_Key_EcoHub2026',
+      apiKey: getEnv('SENDGRID_API_KEY', 'SG.MOCK'),
       fromEmail: 'noreply@ecohub.com',
       templates: {
         welcome: 'd-mock-template-welcome',
@@ -230,14 +244,14 @@ export const config = {
     },
     // Mailgun Alternative
     mailgun: {
-      apiKey: 'MOCK_Mailgun_API_Key_EcoHub2026',
+      apiKey: getEnv('MAILGUN_API_KEY', ''),
       domain: 'mg.ecohub.com',
       enabled: false,
     },
     // Push Notifications (OneSignal)
     oneSignal: {
-      appId: 'MOCK_OneSignal_App_Id_EcoHub2026',
-      apiKey: 'MOCK_OneSignal_API_Key_EcoHub2026',
+      appId: getEnv('ONESIGNAL_APP_ID', ''),
+      apiKey: getEnv('ONESIGNAL_API_KEY', ''),
       enabled: false,
     },
   },
@@ -246,17 +260,17 @@ export const config = {
   analytics: {
     // Google Analytics 4
     googleAnalytics: {
-      measurementId: 'G-MOCK_GA4_ID_ECOHUB',
+      measurementId: getEnv('VITE_GA_MEASUREMENT_ID', 'G-MOCK'),
       enabled: true,
     },
     // Mixpanel
     mixpanel: {
-      token: 'MOCK_Mixpanel_Token_EcoHub2026',
+      token: getEnv('VITE_MIXPANEL_TOKEN', ''),
       enabled: false,
     },
     // Segment
     segment: {
-      writeKey: 'MOCK_Segment_Write_Key_EcoHub2026',
+      writeKey: getEnv('VITE_SEGMENT_WRITE_KEY', ''),
       enabled: false,
     },
   },
@@ -265,17 +279,17 @@ export const config = {
   storage: {
     // AWS S3
     aws: {
-      accessKeyId: 'MOCK_AWS_Access_Key_EcoHub2026',
-      secretAccessKey: 'MOCK_AWS_Secret_Key_EcoHub2026',
+      accessKeyId: getEnv('AWS_ACCESS_KEY_ID', ''),
+      secretAccessKey: getEnv('AWS_SECRET_ACCESS_KEY', ''),
       region: 'us-east-1',
       bucket: 'ecohub-uploads',
       enabled: false,
     },
     // Cloudinary for Images
     cloudinary: {
-      cloudName: 'ecohub-demo',
-      apiKey: 'MOCK_Cloudinary_API_Key_EcoHub2026',
-      apiSecret: 'MOCK_Cloudinary_Secret_EcoHub2026',
+      cloudName: getEnv('VITE_CLOUDINARY_CLOUD_NAME', 'ecohub-demo'),
+      apiKey: getEnv('CLOUDINARY_API_KEY', ''),
+      apiSecret: getEnv('CLOUDINARY_API_SECRET', ''),
       enabled: true,
     },
     // Firebase Storage
@@ -287,16 +301,16 @@ export const config = {
 
   // ==================== SECURITY APIs ====================
   security: {
-    // reCAPTCHA
+    // reCAPTCHA v3
     recaptcha: {
-      siteKey: 'MOCK_reCAPTCHA_Site_Key_EcoHub2026',
-      secretKey: 'MOCK_reCAPTCHA_Secret_Key_EcoHub2026',
+      siteKey: getEnv('VITE_RECAPTCHA_SITE_KEY', '6LcZ-UcsAAAAABULUof5I363Tidim7r5tI3LsWzP'),
+      secretKey: getEnv('RECAPTCHA_SECRET_KEY', '6LcZ-UcsAAAAAE0VL_FdG31ExAq2n0IT2wfk-L9l'),
       enabled: true,
     },
     // Cloudflare Turnstile (Alternative)
     turnstile: {
-      siteKey: 'MOCK_Turnstile_Site_Key_EcoHub2026',
-      secretKey: 'MOCK_Turnstile_Secret_Key_EcoHub2026',
+      siteKey: getEnv('VITE_TURNSTILE_SITE_KEY', ''),
+      secretKey: getEnv('TURNSTILE_SECRET_KEY', ''),
       enabled: false,
     },
     // Rate Limiting

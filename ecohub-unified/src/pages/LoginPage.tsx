@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Globe } from 'lucide-react';
+import { Globe, Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useReCaptcha } from '../hooks/useReCaptcha';
+import { config } from '../config/config';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -14,11 +16,21 @@ const LoginPage = () => {
   const [resetEmailSent, setResetEmailSent] = useState(false);
   const { login, loginWithGoogle, forgotPassword } = useAuth();
   const navigate = useNavigate();
+  const { verifyReCaptcha, isReady } = useReCaptcha();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
+
+    // Verify reCAPTCHA before login
+    const recaptchaToken = await verifyReCaptcha('login');
+    if (config.security.recaptcha.enabled && !recaptchaToken) {
+      setError('reCAPTCHA verification failed. Please try again.');
+      setIsLoading(false);
+      return;
+    }
+    console.log('[Login] reCAPTCHA verified, token:', recaptchaToken?.substring(0, 20) + '...');
 
     const result = await login(email, password);
     
@@ -33,6 +45,14 @@ const LoginPage = () => {
   const handleGoogleSignIn = async () => {
     setError('');
     setIsGoogleLoading(true);
+
+    // Verify reCAPTCHA for Google sign-in too
+    const recaptchaToken = await verifyReCaptcha('google_signin');
+    if (config.security.recaptcha.enabled && !recaptchaToken) {
+      setError('reCAPTCHA verification failed. Please try again.');
+      setIsGoogleLoading(false);
+      return;
+    }
 
     const result = await loginWithGoogle();
     
@@ -52,6 +72,15 @@ const LoginPage = () => {
     }
     
     setIsLoading(true);
+
+    // Verify reCAPTCHA for password reset
+    const recaptchaToken = await verifyReCaptcha('forgot_password');
+    if (config.security.recaptcha.enabled && !recaptchaToken) {
+      setError('reCAPTCHA verification failed. Please try again.');
+      setIsLoading(false);
+      return;
+    }
+
     const result = await forgotPassword(email);
     
     if (result.success) {
@@ -268,7 +297,7 @@ const LoginPage = () => {
 
                 <button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={isLoading || !isReady}
                   className="w-full py-3.5 bg-charcoal text-white rounded-xl font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoading ? (
@@ -283,6 +312,14 @@ const LoginPage = () => {
                     'Sign in'
                   )}
                 </button>
+
+                {/* reCAPTCHA Badge */}
+                {config.security.recaptcha.enabled && (
+                  <div className="flex items-center justify-center text-xs text-gray-400 mt-4">
+                    <Shield className="w-3 h-3 mr-1" />
+                    Protected by reCAPTCHA
+                  </div>
+                )}
               </form>
 
               <p className="mt-8 text-center text-gray-500">

@@ -7,6 +7,7 @@ import jwt from 'jsonwebtoken';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import admin from 'firebase-admin';
+import rateLimit from 'express-rate-limit';
 
 dotenv.config();
 
@@ -59,6 +60,48 @@ try {
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// ==================== RATE LIMITING ====================
+// General API rate limiter
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: {
+    success: false,
+    message: 'Too many requests, please try again after 15 minutes',
+  },
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+
+// Strict rate limiter for auth endpoints
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // Limit each IP to 10 requests per windowMs
+  message: {
+    success: false,
+    message: 'Too many authentication attempts, please try again after 15 minutes',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Very strict limiter for password reset
+const passwordResetLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 3, // Limit each IP to 3 requests per hour
+  message: {
+    success: false,
+    message: 'Too many password reset attempts, please try again after 1 hour',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Apply general limiter to all API routes
+app.use('/api/', generalLimiter);
+
+console.log('✓ Rate limiting enabled');
 
 // Serve static files in production
 if (process.env.NODE_ENV === 'production') {
@@ -210,6 +253,11 @@ const authenticateToken = (req, res, next) => {
 };
 
 // ==================== AUTH ROUTES ====================
+
+// Apply strict rate limiting to auth routes
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
+app.use('/api/auth/forgot-password', passwordResetLimiter);
 
 // Sync Firebase user with backend database
 app.post('/api/auth/sync', verifyFirebaseToken, async (req, res) => {
@@ -475,6 +523,49 @@ app.post('/api/energy/solar-calculate', (req, res) => {
   });
 });
 
+// ==================== RECAPTCHA VERIFICATION ====================
+const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY || '6LcZ-UcsAAAAAE0VL_FdG31ExAq2n0IT2wfk-L9l';
+
+app.post('/api/security/verify-recaptcha', async (req, res) => {
+  const { token, action } = req.body;
+  
+  if (!token) {
+    return res.status(400).json({ success: false, message: 'reCAPTCHA token required' });
+  }
+  
+  try {
+    const response = await fetch(
+      `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET_KEY}&response=${token}`,
+      { method: 'POST' }
+    );
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      // Score 0.0 (bot) to 1.0 (human) - we consider >= 0.5 as valid
+      const isValid = data.score >= 0.5;
+      console.log(`[reCAPTCHA] Action: ${action || 'unknown'}, Score: ${data.score}, Valid: ${isValid}`);
+      
+      res.json({
+        success: isValid,
+        score: data.score,
+        action: data.action,
+        timestamp: data.challenge_ts,
+      });
+    } else {
+      console.log('[reCAPTCHA] Verification failed:', data['error-codes']);
+      res.json({
+        success: false,
+        message: 'reCAPTCHA verification failed',
+        errors: data['error-codes'],
+      });
+    }
+  } catch (error) {
+    console.error('[reCAPTCHA] Error:', error.message);
+    res.status(500).json({ success: false, message: 'reCAPTCHA verification error' });
+  }
+});
+
 // ==================== HEALTH CHECK ====================
 app.get('/api/health', (req, res) => {
   res.json({ 
@@ -486,7 +577,9 @@ app.get('/api/health', (req, res) => {
       transport: 'active',
       waste: 'active',
       solarCalculator: 'active',
-      firebaseAuth: 'active'
+      firebaseAuth: 'active',
+      reCaptcha: 'active',
+      rateLimiting: 'active'
     }
   });
 });
@@ -528,6 +621,9 @@ app.listen(PORT, () => {
   console.log('      - Sustainable Transport API');
   console.log('      - Waste Exchange API');
   console.log('      - Firebase Authentication ✓');
+  console.log('   Security features:');
+  console.log('      - reCAPTCHA v3 ✓');
+  console.log('      - Rate Limiting ✓');
   console.log('═══════════════════════════════════════════════════════════════');
   console.log('');
 });

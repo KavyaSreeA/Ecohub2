@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Globe } from 'lucide-react';
+import { Globe, Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useReCaptcha } from '../hooks/useReCaptcha';
+import { config } from '../config/config';
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -16,6 +18,7 @@ const RegisterPage = () => {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const { register, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
+  const { verifyReCaptcha, isReady } = useReCaptcha();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -39,6 +42,16 @@ const RegisterPage = () => {
     }
 
     setIsLoading(true);
+
+    // Verify reCAPTCHA before registration
+    const recaptchaToken = await verifyReCaptcha('register');
+    if (config.security.recaptcha.enabled && !recaptchaToken) {
+      setError('reCAPTCHA verification failed. Please try again.');
+      setIsLoading(false);
+      return;
+    }
+    console.log('[Register] reCAPTCHA verified, token:', recaptchaToken?.substring(0, 20) + '...');
+
     const result = await register(formData.name, formData.email, formData.password);
     
     if (result.success) {
@@ -52,6 +65,14 @@ const RegisterPage = () => {
   const handleGoogleSignUp = async () => {
     setError('');
     setIsGoogleLoading(true);
+
+    // Verify reCAPTCHA for Google sign-up too
+    const recaptchaToken = await verifyReCaptcha('google_signup');
+    if (config.security.recaptcha.enabled && !recaptchaToken) {
+      setError('reCAPTCHA verification failed. Please try again.');
+      setIsGoogleLoading(false);
+      return;
+    }
 
     const result = await loginWithGoogle();
     
@@ -209,7 +230,7 @@ const RegisterPage = () => {
 
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || !isReady}
               className="w-full py-3.5 bg-charcoal text-white rounded-xl font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
@@ -224,6 +245,14 @@ const RegisterPage = () => {
                 'Create account'
               )}
             </button>
+
+            {/* reCAPTCHA Badge */}
+            {config.security.recaptcha.enabled && (
+              <div className="flex items-center justify-center text-xs text-gray-400 mt-4">
+                <Shield className="w-3 h-3 mr-1" />
+                Protected by reCAPTCHA
+              </div>
+            )}
           </form>
 
           <p className="mt-8 text-center text-gray-500">

@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import ReCaptchaProvider from './components/ReCaptchaProvider';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import CommunityChat from './components/CommunityChat';
@@ -19,8 +20,9 @@ import SolarCalculatorPage from './pages/SolarCalculatorPage';
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
+    <ReCaptchaProvider>
+      <AuthProvider>
+        <Router>
         <div className="min-h-screen flex flex-col">
           <Navbar />
           <main className="flex-grow">
@@ -44,8 +46,9 @@ function App() {
           {/* Community Chat - Floating button on all pages */}
           <CommunityChat />
         </div>
-      </Router>
-    </AuthProvider>
+        </Router>
+      </AuthProvider>
+    </ReCaptchaProvider>
   );
 }
 

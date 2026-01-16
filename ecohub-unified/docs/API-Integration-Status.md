@@ -140,6 +140,39 @@ This document tracks the status of all API integrations in the EcoHub Unified Pl
 
 ---
 
+## 🔒 Security Features
+
+### reCAPTCHA v3
+| Status | ✅ Active |
+|--------|-----------|
+| **Site Key** | `6LcZ-UcsAAAAABULUof5I363Tidim7r5tI3LsWzP` |
+
+**Protected Forms:**
+- ✅ Login (email/password & Google)
+- ✅ Register (email/password & Google)
+- ✅ Forgot Password
+
+**Files:**
+- `src/components/ReCaptchaProvider.tsx`
+- `src/hooks/useReCaptcha.ts`
+
+---
+
+### Rate Limiting
+| Status | ✅ Active |
+|--------|-----------|
+
+**Limits:**
+- General API: 100 requests / 15 min
+- Auth endpoints: 10 requests / 15 min
+- Password reset: 3 requests / hour
+
+**Package:** `express-rate-limit`
+
+📝 See `docs/Security-Setup.md` for details.
+
+---
+
 ## 📊 Config File Location
 
 All API configurations are in:
@@ -159,4 +192,4 @@ src/config/config.ts
 ---
 
 ## 📅 Last Updated
-January 12, 2026
+January 16, 2026

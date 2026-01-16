@@ -5,6 +5,8 @@
 | Document | Description | Priority |
 |----------|-------------|----------|
 | [API-Integration-Status.md](./API-Integration-Status.md) | Overall status of all API integrations | 📋 Overview |
+| [Environment-Variables.md](./Environment-Variables.md) | How to set up API keys securely | 🔐 Important |
+| [Security-Setup.md](./Security-Setup.md) | reCAPTCHA & Rate Limiting setup | 🔒 Security |
 | [Google-Maps-API-Setup.md](./Google-Maps-API-Setup.md) | Google Maps API setup instructions | ⚠️ Action Required |
 | [NREL-API-Setup.md](./NREL-API-Setup.md) | Solar data API setup | 🔧 Optional Enhancement |
 
@@ -18,6 +20,8 @@
 | OpenWeatherMap | ✅ Active | None |
 | Stream Chat | ✅ Configured | None |
 | Google Maps | ⚠️ Pending | Enable APIs in Cloud Console |
+| **reCAPTCHA v3** | ✅ Active | None |
+| **Rate Limiting** | ✅ Active | None |
 | NREL | 🔧 Mock | Get free API key |
 | Stripe/Razorpay | 🔧 Mock | Add real keys for payments |
 | SendGrid | 🔧 Mock | Add real key for emails |
