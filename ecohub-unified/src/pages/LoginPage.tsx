@@ -101,12 +101,12 @@ const LoginPage = () => {
           alt="Nature" 
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-charcoal/60 to-transparent flex justify-center items-center">
-          <div className="p-20 text-white w-3/4">
+        <div className="absolute inset-0 bg-gradient-to-r from-charcoal/60 to-transparent flex items-center">
+          <div className="p-16 text-white max-w-lg">
             <h2 className="font-serif text-4xl font-semibold mb-6">
-              Welcome Back to Ecohub
+              Welcome back to EcoHub
             </h2>
-            <p className="text-xl text-gray-200 leading-relaxed">
+            <p className="text-lg text-gray-200 leading-relaxed">
               Continue your journey towards a sustainable future. Every action you take makes a difference.
             </p>
           </div>
@@ -121,12 +121,12 @@ const LoginPage = () => {
           className="w-full max-w-md"
         >
           {/* Logo */}
-          {/* <Link to="/" className="flex items-center space-x-3 mb-12">
+          <Link to="/" className="flex items-center space-x-3 mb-12">
             <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center">
               <Globe className="w-5 h-5 text-white" />
             </div>
             <span className="text-2xl font-serif font-semibold text-charcoal">EcoHub</span>
-          </Link> */}
+          </Link>
 
           {showForgotPassword ? (
             // Forgot Password Form

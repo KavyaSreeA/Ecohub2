@@ -9,9 +9,9 @@ interface Listing {
   category: string;
   quantity: string;
   location: string;
-  seller?: string;
-  sellerEmail?: string;
-  sellerPhone?: string;
+  seller: string;
+  sellerEmail: string;
+  sellerPhone: string;
   price: string;
   description: string;
   status: string;
@@ -51,65 +51,102 @@ const WastePage = () => {
     description: ''
   });
 
-  useEffect(() => {
-    // Load listings from API
-    fetch('/api/waste/listings')
-      .then(async r => {
-        if (!r.ok) {
-          throw new Error(`HTTP error! status: ${r.status}`);
-        }
-        const text = await r.text();
-        if (!text) {
-          return [];
-        }
-        return JSON.parse(text);
-      })
-      .then(data => {
-        setListings(Array.isArray(data) ? data : []);
-      })
-      .catch(err => {
-        console.error('Error fetching listings:', err);
-        setListings([]);
-      });
+  // Sample listings data with contact info
+  const sampleListings: Listing[] = [
+    {
+      id: '1',
+      title: 'Recycled Plastic Bottles',
+      category: 'plastic',
+      quantity: '100 kg',
+      location: 'Mumbai, Maharashtra',
+      seller: 'GreenRecycle Co.',
+      sellerEmail: 'contact@greenrecycle.in',
+      sellerPhone: '+91 98765 43210',
+      price: '₹15/kg',
+      description: 'Clean, sorted PET bottles ready for recycling. Collected from residential areas.',
+      status: 'available'
+    },
+    {
+      id: '2',
+      title: 'Office Paper Waste',
+      category: 'paper',
+      quantity: '200 kg',
+      location: 'Bangalore, Karnataka',
+      seller: 'EcoPaper Solutions',
+      sellerEmail: 'info@ecopaper.in',
+      sellerPhone: '+91 87654 32109',
+      price: '₹8/kg',
+      description: 'Mixed office paper including printouts, newspapers, and cardboard.',
+      status: 'available'
+    },
+    {
+      id: '3',
+      title: 'Scrap Metal Collection',
+      category: 'metal',
+      quantity: '500 kg',
+      location: 'Chennai, Tamil Nadu',
+      seller: 'MetalWorks India',
+      sellerEmail: 'sales@metalworks.in',
+      sellerPhone: '+91 76543 21098',
+      price: '₹40/kg',
+      description: 'Mixed ferrous and non-ferrous metals from industrial sources.',
+      status: 'available'
+    },
+    {
+      id: '4',
+      title: 'Glass Bottles & Jars',
+      category: 'glass',
+      quantity: '150 kg',
+      location: 'Delhi NCR',
+      seller: 'ClearGlass Recyclers',
+      sellerEmail: 'recycle@clearglass.in',
+      sellerPhone: '+91 65432 10987',
+      price: '₹12/kg',
+      description: 'Sorted clear and colored glass containers, cleaned and label-free.',
+      status: 'available'
+    },
+    {
+      id: '5',
+      title: 'E-Waste Components',
+      category: 'electronics',
+      quantity: '75 kg',
+      location: 'Hyderabad, Telangana',
+      seller: 'TechRecycle Hub',
+      sellerEmail: 'ewaste@techrecycle.in',
+      sellerPhone: '+91 54321 09876',
+      price: '₹100/kg',
+      description: 'Circuit boards, cables, and electronic components for responsible recycling.',
+      status: 'available'
+    },
+    {
+      id: '6',
+      title: 'Organic Compost Material',
+      category: 'organic',
+      quantity: '300 kg',
+      location: 'Pune, Maharashtra',
+      seller: 'GreenEarth Farms',
+      sellerEmail: 'compost@greenearth.in',
+      sellerPhone: '+91 43210 98765',
+      price: 'Free',
+      description: 'Kitchen and garden waste suitable for composting. Rich in nutrients.',
+      status: 'available'
+    }
+  ];
 
+  useEffect(() => {
     // Load categories from API
     fetch('/api/waste/categories')
-      .then(async r => {
-        if (!r.ok) {
-          throw new Error(`HTTP error! status: ${r.status}`);
-        }
-        const text = await r.text();
-        if (!text) {
-          return [];
-        }
-        return JSON.parse(text);
-      })
-      .then(data => {
-        setCategories(Array.isArray(data) ? data : []);
-      })
-      .catch(err => {
-        console.error('Error fetching categories:', err);
-        setCategories([]);
-      });
+      .then(r => r.json())
+      .then(data => setCategories(data))
+      .catch(() => {});
 
     fetch('/api/waste/stats')
-      .then(async r => {
-        if (!r.ok) {
-          throw new Error(`HTTP error! status: ${r.status}`);
-        }
-        const text = await r.text();
-        if (!text) {
-          return null;
-        }
-        return JSON.parse(text);
-      })
-      .then(data => {
-        setStats(data);
-      })
-      .catch(err => {
-        console.error('Error fetching stats:', err);
-        setStats(null);
-      });
+      .then(r => r.json())
+      .then(data => setStats(data))
+      .catch(() => {});
+
+    // Use sample listings
+    setListings(sampleListings);
   }, []);
 
   const filteredListings = selectedCategory
@@ -140,44 +177,35 @@ const WastePage = () => {
 
   const handleSubmitListing = async () => {
     if (!newListing.title || !newListing.quantity || !newListing.location) return;
-    if (!user) {
-      navigate('/login');
-      return;
-    }
 
     setIsSubmitting(true);
-    try {
-      const response = await fetch('/api/waste/listings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...newListing,
-          seller_id: user.id
-        })
-      });
+    await new Promise(resolve => setTimeout(resolve, 1500));
 
-      if (response.ok) {
-        const listing = await response.json();
-        setListings([listing, ...listings]);
-        setNewListing({
-          title: '',
-          category: 'plastic',
-          quantity: '',
-          location: '',
-          price: '',
-          description: ''
-        });
-        setShowAddListingModal(false);
-      } else {
-        console.error('Failed to create listing');
-      }
-    } catch (error) {
-      console.error('Error creating listing:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
+    const listing: Listing = {
+      id: Date.now().toString(),
+      title: newListing.title,
+      category: newListing.category,
+      quantity: newListing.quantity,
+      location: newListing.location,
+      seller: user?.name || 'Anonymous',
+      sellerEmail: user?.email || '',
+      sellerPhone: '+91 XXXXX XXXXX',
+      price: newListing.price || 'Free',
+      description: newListing.description,
+      status: 'available'
+    };
+
+    setListings([listing, ...listings]);
+    setNewListing({
+      title: '',
+      category: 'plastic',
+      quantity: '',
+      location: '',
+      price: '',
+      description: ''
+    });
+    setShowAddListingModal(false);
+    setIsSubmitting(false);
   };
 
   return (
@@ -259,7 +287,7 @@ const WastePage = () => {
           >
             All
           </button>
-          {Array.isArray(categories) && categories.map(cat => (
+          {categories.map(cat => (
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.name.toLowerCase().split(' ')[0])}
@@ -331,7 +359,7 @@ const WastePage = () => {
                     <svg className="w-4 h-4 mr-2 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
-                    {listing.seller || 'Anonymous'}
+                    {listing.seller}
                   </p>
                 </div>
                 
@@ -404,44 +432,40 @@ const WastePage = () => {
                 <div className="space-y-4">
                   <div className="flex items-center p-4 bg-gray-50 rounded-xl">
                     <div className="w-12 h-12 bg-primary-500 rounded-full flex items-center justify-center text-white text-lg font-medium mr-4">
-                      {selectedListing.seller?.charAt(0) || '?'}
+                      {selectedListing.seller.charAt(0)}
                     </div>
                     <div>
-                      <p className="font-medium text-charcoal">{selectedListing.seller || 'Unknown Seller'}</p>
+                      <p className="font-medium text-charcoal">{selectedListing.seller}</p>
                       <p className="text-sm text-gray-500">Verified Seller</p>
                     </div>
                   </div>
 
                   <div className="space-y-3">
-                    {selectedListing.sellerEmail && (
-                      <a 
-                        href={`mailto:${selectedListing.sellerEmail}`}
-                        className="flex items-center p-4 border border-gray-200 rounded-xl hover:bg-primary-50 hover:border-primary-200 transition-colors"
-                      >
-                        <svg className="w-5 h-5 text-primary-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
-                        <div>
-                          <p className="text-sm text-gray-500">Email</p>
-                          <p className="font-medium text-primary-600">{selectedListing.sellerEmail}</p>
-                        </div>
-                      </a>
-                    )}
+                    <a 
+                      href={`mailto:${selectedListing.sellerEmail}`}
+                      className="flex items-center p-4 border border-gray-200 rounded-xl hover:bg-primary-50 hover:border-primary-200 transition-colors"
+                    >
+                      <svg className="w-5 h-5 text-primary-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                      <div>
+                        <p className="text-sm text-gray-500">Email</p>
+                        <p className="font-medium text-primary-600">{selectedListing.sellerEmail}</p>
+                      </div>
+                    </a>
 
-                    {selectedListing.sellerPhone && (
-                      <a 
-                        href={`tel:${selectedListing.sellerPhone}`}
-                        className="flex items-center p-4 border border-gray-200 rounded-xl hover:bg-primary-50 hover:border-primary-200 transition-colors"
-                      >
-                        <svg className="w-5 h-5 text-primary-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                        </svg>
-                        <div>
-                          <p className="text-sm text-gray-500">Phone</p>
-                          <p className="font-medium text-primary-600">{selectedListing.sellerPhone}</p>
-                        </div>
-                      </a>
-                    )}
+                    <a 
+                      href={`tel:${selectedListing.sellerPhone}`}
+                      className="flex items-center p-4 border border-gray-200 rounded-xl hover:bg-primary-50 hover:border-primary-200 transition-colors"
+                    >
+                      <svg className="w-5 h-5 text-primary-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                      </svg>
+                      <div>
+                        <p className="text-sm text-gray-500">Phone</p>
+                        <p className="font-medium text-primary-600">{selectedListing.sellerPhone}</p>
+                      </div>
+                    </a>
 
                     <div className="flex items-start p-4 border border-gray-200 rounded-xl">
                       <svg className="w-5 h-5 text-primary-500 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

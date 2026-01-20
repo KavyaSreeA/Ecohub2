@@ -9,13 +9,11 @@
     "client": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "npm run dev",
-    "db:setup": "mysql -u root -p < database/schema.sql"
+    "start": "npm run dev"
   },
   "dependencies": {
     "@react-google-maps/api": "^2.20.8",
     "bcryptjs": "^2.4.3",
-    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
@@ -23,13 +21,9 @@
     "firebase": "^12.7.0",
     "firebase-admin": "^13.6.0",
     "jsonwebtoken": "^9.0.2",
-<<<<<<< HEAD
     "react-google-recaptcha-v3": "^1.11.0",
     "stream-chat": "^9.28.0",
     "stream-chat-react": "^13.13.1",
-=======
-    "mysql2": "^3.6.5",
->>>>>>> auth
     "uuid": "^9.0.0"
   },
   "devDependencies": {

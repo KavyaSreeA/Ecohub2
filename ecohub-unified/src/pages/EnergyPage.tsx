@@ -52,40 +52,10 @@ const EnergyPage = () => {
 
   useEffect(() => {
     Promise.all([
-      fetch('/api/energy/sources')
-        .then(async r => {
-          if (!r.ok) {
-            throw new Error(`HTTP error! status: ${r.status}`);
-          }
-          const text = await r.text();
-          if (!text) {
-            return [];
-          }
-          return JSON.parse(text);
-        })
-        .then(data => Array.isArray(data) ? data : [])
-        .catch(err => {
-          console.error('Error fetching energy sources:', err);
-          return [];
-        }),
-      fetch('/api/energy/stats')
-        .then(async r => {
-          if (!r.ok) {
-            throw new Error(`HTTP error! status: ${r.status}`);
-          }
-          const text = await r.text();
-          if (!text) {
-            return null;
-          }
-          return JSON.parse(text);
-        })
-        .then(data => data)
-        .catch(err => {
-          console.error('Error fetching energy stats:', err);
-          return null;
-        })
+      fetch('/api/energy/sources').then(r => r.json()),
+      fetch('/api/energy/stats').then(r => r.json())
     ]).then(([sourcesData, statsData]) => {
-      setSources(Array.isArray(sourcesData) ? sourcesData : []);
+      setSources(sourcesData);
       setStats(statsData);
     });
   }, []);
@@ -203,8 +173,7 @@ const EnergyPage = () => {
         {/* Energy Sources */}
         <h2 className="text-2xl font-serif font-semibold text-charcoal mb-6">Energy Sources</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-          {Array.isArray(sources) && sources.length > 0 ? (
-            sources.map((source, index) => (
+          {sources.map((source, index) => (
             <motion.div
               key={source.id}
               initial={{ opacity: 0, y: 20 }}
@@ -235,12 +204,7 @@ const EnergyPage = () => {
                 </button>
               </div>
             </motion.div>
-            ))
-          ) : (
-            <div className="col-span-full text-center py-12">
-              <p className="text-gray-500 text-lg">No energy sources available at the moment.</p>
-            </div>
-          )}
+          ))}
         </div>
 
         {/* CTA */}
