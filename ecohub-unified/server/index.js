@@ -608,6 +608,7 @@ if (process.env.NODE_ENV === 'production') {
 
 // Start server
 app.listen(PORT, () => {
+<<<<<<< HEAD
   console.log('');
   console.log('═══════════════════════════════════════════════════════════════');
   console.log('   EcoHub Unified Platform - Backend Server');
@@ -616,14 +617,5 @@ app.listen(PORT, () => {
   console.log(`   Health check: http://localhost:${PORT}/api/health`);
   console.log(`   Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log('   All microservices integrated:');
-  console.log('      - Conservation API');
-  console.log('      - Renewable Energy API');
-  console.log('      - Sustainable Transport API');
-  console.log('      - Waste Exchange API');
-  console.log('      - Firebase Authentication ✓');
-  console.log('   Security features:');
-  console.log('      - reCAPTCHA v3 ✓');
-  console.log('      - Rate Limiting ✓');
-  console.log('═══════════════════════════════════════════════════════════════');
-  console.log('');
+  // Server started successfully
 });

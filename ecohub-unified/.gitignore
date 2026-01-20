@@ -53,9 +53,6 @@ coverage/
 firebase-service-account.json
 
 # API Keys Config (NEVER COMMIT - use env.example as template)
-.env
-.env.local
-.env.*.local
 api-keys.env
 src/config/config.local.ts
 src/config/keys.ts
