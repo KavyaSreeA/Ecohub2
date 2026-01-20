@@ -147,6 +147,10 @@ router.post('/users/:id/suspend', async (req, res) => {
   try {
     const { reason } = req.body;
     
+    if (!reason || reason.length < 5 || reason.length > 255) {
+      return res.status(400).json({ message: 'Valid suspend reason required' });
+    }
+    
     if (req.params.id === req.user.id) {
       return res.status(400).json({ message: 'Cannot suspend yourself' });
     }
