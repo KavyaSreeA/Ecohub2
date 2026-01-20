@@ -42,9 +42,9 @@ h1, h2, h3, h4 {
 }
 
 .btn-primary {
-  @apply bg-charcoal text-white px-8 py-3 rounded-full font-medium transition-all hover:bg-gray-800;
+  @apply bg-primary-500 text-white px-8 py-3 rounded-full font-medium transition-all hover:bg-primary-800;
 }
 
 .btn-outline {
-  @apply border-2 border-charcoal text-charcoal px-8 py-3 rounded-full font-medium transition-all hover:bg-charcoal hover:text-white;
+  @apply border-2 border-primary-500 text-primary-500 px-8 py-3 rounded-full font-medium transition-all hover:bg-primary-500 hover:text-white;
 }

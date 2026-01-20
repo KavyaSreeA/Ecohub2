@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 const EnergyContactPage = () => {
@@ -18,9 +18,7 @@ const EnergyContactPage = () => {
   const [submitted, setSubmitted] = useState(false);
 
   const source = location.state?.source;
-
-  // Company info for each energy source
-  const companyInfo: Record<string, {
+  const [company, setCompany] = useState<{
     name: string;
     description: string;
     address: string;
@@ -30,54 +28,37 @@ const EnergyContactPage = () => {
     founded: string;
     employees: string;
     image: string;
-  }> = {
-    'Solar Power': {
-      name: 'SunBright Energy Solutions',
-      description: 'Leading provider of residential and commercial solar panel installations. We help homes and businesses harness the power of the sun with cutting-edge photovoltaic technology.',
-      address: '123 Solar Avenue, Bangalore, Karnataka 560001',
-      phone: '+91 80 4567 8901',
-      email: 'contact@sunbright.energy',
-      website: 'www.sunbright.energy',
-      founded: '2015',
-      employees: '500+',
-      image: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=800&q=80'
-    },
-    'Wind Energy': {
-      name: 'WindForce Renewables',
-      description: 'Pioneering wind energy solutions across India. Our wind farms generate clean electricity for millions of households while creating sustainable jobs.',
-      address: '456 Wind Mill Road, Chennai, Tamil Nadu 600001',
-      phone: '+91 44 5678 9012',
-      email: 'info@windforce.in',
-      website: 'www.windforce.in',
-      founded: '2012',
-      employees: '750+',
-      image: 'https://images.unsplash.com/photo-1532601224476-15c79f2f7a51?w=800&q=80'
-    },
-    'Hydroelectric': {
-      name: 'HydroPower India Ltd.',
-      description: 'Harnessing the power of water to generate sustainable electricity. Our hydroelectric plants provide reliable, renewable energy to communities across the nation.',
-      address: '789 Dam View Road, Dehradun, Uttarakhand 248001',
-      phone: '+91 135 234 5678',
-      email: 'contact@hydropowerindia.com',
-      website: 'www.hydropowerindia.com',
-      founded: '2008',
-      employees: '1200+',
-      image: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=800&q=80'
-    },
-    'Geothermal': {
-      name: 'GeoTherm Energy Systems',
-      description: 'Tapping into Earth\'s natural heat for sustainable power generation. Our geothermal plants provide consistent, clean energy regardless of weather conditions.',
-      address: '321 Thermal Springs Lane, Pune, Maharashtra 411001',
-      phone: '+91 20 6789 0123',
-      email: 'hello@geotherm.energy',
-      website: 'www.geotherm.energy',
-      founded: '2018',
-      employees: '300+',
-      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80'
-    }
-  };
+  } | null>(null);
+  const [isLoadingCompany, setIsLoadingCompany] = useState(true);
 
-  const company = source ? companyInfo[source.name] : null;
+  useEffect(() => {
+    if (source?.name) {
+      setIsLoadingCompany(true);
+      fetch(`/api/energy/companies/${encodeURIComponent(source.name)}`)
+        .then(r => r.json())
+        .then(data => {
+          setCompany(data);
+          setIsLoadingCompany(false);
+        })
+        .catch(err => {
+          console.error('Error fetching company info:', err);
+          setIsLoadingCompany(false);
+        });
+    } else {
+      setIsLoadingCompany(false);
+    }
+  }, [source]);
+
+  if (isLoadingCompany) {
+    return (
+      <div className="min-h-screen bg-cream flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
+          <p className="text-gray-500">Loading company information...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!company) {
     return (

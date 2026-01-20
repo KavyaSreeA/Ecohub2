@@ -36,8 +36,10 @@ const TransportPage = () => {
   const [isBooking, setIsBooking] = useState(false);
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
   const [estimatedDistance, setEstimatedDistance] = useState(0);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
 
-  const vehicles: Vehicle[] = [
+  // Default vehicle data (fallback)
+  const defaultVehicles: Vehicle[] = [
     {
       id: '1',
       type: 'bike',
@@ -94,7 +96,35 @@ const TransportPage = () => {
     fetch('/api/transport/stats')
       .then(r => r.json())
       .then(data => setStats(data))
-      .catch(() => {});
+      .catch(err => {
+        console.error('Error fetching transport stats:', err);
+      });
+
+    // Fetch vehicles from API (if available) or use defaults
+    fetch('/api/transport/vehicles')
+      .then(r => r.json())
+      .then(data => {
+        if (data && data.length > 0) {
+          // Transform API data to match Vehicle interface
+          const transformed = data.map((v: any, index: number) => ({
+            id: v.id,
+            type: v.type,
+            name: v.type.charAt(0).toUpperCase() + v.type.slice(1).replace('_', ' '),
+            basePrice: v.base_price || defaultVehicles[index]?.basePrice || 25,
+            pricePerKm: v.price_per_km || defaultVehicles[index]?.pricePerKm || 8,
+            co2Reduction: v.co2Reduction || '90%',
+            image: v.image || defaultVehicles[index]?.image || 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=400&q=80',
+            eta: `${Math.floor(Math.random() * 10) + 2} min`
+          }));
+          setVehicles(transformed);
+        } else {
+          setVehicles(defaultVehicles);
+        }
+      })
+      .catch(err => {
+        console.error('Error fetching vehicles:', err);
+        setVehicles(defaultVehicles);
+      });
   }, []);
 
   const handleSearch = async () => {
