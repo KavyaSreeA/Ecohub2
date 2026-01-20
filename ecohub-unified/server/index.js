@@ -379,20 +379,5 @@ app.use((req, res) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log('');
-  console.log('🌿 ═══════════════════════════════════════════════════════════');
-  console.log('   EcoHub Unified Platform - Backend Server');
-  console.log('═══════════════════════════════════════════════════════════════');
-  console.log(`   🚀 Server running on: http://localhost:${PORT}`);
-  console.log(`   📊 Health check: http://localhost:${PORT}/api/health`);
-  console.log('   ✅ All microservices integrated:');
-  console.log('      • Authentication API (JWT + Roles)');
-  console.log('      • Admin Management API');
-  console.log('      • Conservation API');
-  console.log('      • Renewable Energy API');
-  console.log('      • Sustainable Transport API');
-  console.log('      • Waste Exchange API');
-  console.log('   📦 Database: MySQL (with fallback to static data)');
-  console.log('═══════════════════════════════════════════════════════════════');
-  console.log('');
+  // Server started successfully
 });
