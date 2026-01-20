@@ -1,6 +1,5 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
-import { v4 as uuidv4 } from 'uuid';
 import User from '../models/User.js';
 import BusinessProfile from '../models/BusinessProfile.js';
 import CommunityProfile from '../models/CommunityProfile.js';
@@ -194,7 +193,7 @@ router.put('/profile', authenticateToken, async (req, res) => {
     const { name, phone, avatar, businessProfile, communityProfile } = req.body;
 
     // Update user
-    const updatedUser = await User.update(req.user.id, { name, phone, avatar });
+    await User.update(req.user.id, { name, phone, avatar });
 
     // Update business profile if applicable
     if (req.user.role === 'business' && businessProfile) {
