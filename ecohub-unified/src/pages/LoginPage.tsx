@@ -1,10 +1,16 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Globe, Shield } from 'lucide-react';
+import { Globe, Shield, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useReCaptcha } from '../hooks/useReCaptcha';
 import { config } from '../config/config';
+
+// Admin credentials (in real app, this should be server-side)
+const ADMIN_CREDENTIALS = {
+  email: 'admin@ecohub.com',
+  password: 'admin123'
+};
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -14,6 +20,7 @@ const LoginPage = () => {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
+  const [isAdminLogin, setIsAdminLogin] = useState(false);
   const { login, loginWithGoogle, forgotPassword } = useAuth();
   const navigate = useNavigate();
   const { verifyReCaptcha, isReady } = useReCaptcha();
@@ -22,6 +29,18 @@ const LoginPage = () => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
+
+    // Check if this is admin login
+    if (isAdminLogin) {
+      if (email === ADMIN_CREDENTIALS.email && password === ADMIN_CREDENTIALS.password) {
+        localStorage.setItem('isAdmin', 'true');
+        navigate('/admin');
+      } else {
+        setError('Invalid admin credentials');
+      }
+      setIsLoading(false);
+      return;
+    }
 
     // Verify reCAPTCHA before login (with fallback support)
     const recaptchaToken = await verifyReCaptcha('login');
@@ -212,18 +231,40 @@ const LoginPage = () => {
             // Login Form
             <>
               <h1 className="font-serif text-3xl font-semibold text-charcoal mb-2">
-                Sign in to your account
+                {isAdminLogin ? 'Admin Sign In' : 'Sign in to your account'}
               </h1>
               <p className="text-gray-500 mb-8">
-                Welcome back! Please enter your details.
+                {isAdminLogin ? 'Enter your admin credentials.' : 'Welcome back! Please enter your details.'}
               </p>
 
-              {/* Google Sign In */}
+              {/* Admin Login Toggle */}
               <button
-                onClick={handleGoogleSignIn}
-                disabled={isGoogleLoading}
-                className="w-full flex items-center justify-center px-4 py-3.5 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors mb-6 disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => {
+                  setIsAdminLogin(!isAdminLogin);
+                  setError('');
+                  setEmail(isAdminLogin ? '' : 'admin@ecohub.com');
+                  setPassword('');
+                }}
+                className={`w-full flex items-center justify-center px-4 py-3.5 border rounded-xl transition-colors mb-4 ${
+                  isAdminLogin 
+                    ? 'border-primary-500 bg-primary-50 text-primary-700' 
+                    : 'border-gray-200 hover:bg-gray-50 text-gray-700'
+                }`}
               >
+                <ShieldCheck className="w-5 h-5 mr-3" />
+                <span className="font-medium">
+                  {isAdminLogin ? 'Switch to User Login' : 'Sign in as Admin'}
+                </span>
+              </button>
+
+              {!isAdminLogin && (
+                <>
+                  {/* Google Sign In */}
+                  <button
+                    onClick={handleGoogleSignIn}
+                    disabled={isGoogleLoading}
+                    className="w-full flex items-center justify-center px-4 py-3.5 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors mb-6 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
                 {isGoogleLoading ? (
                   <svg className="animate-spin h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -251,6 +292,8 @@ const LoginPage = () => {
                   <span className="px-4 bg-cream text-gray-500">or continue with email</span>
                 </div>
               </div>
+                </>
+              )}
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 {error && (

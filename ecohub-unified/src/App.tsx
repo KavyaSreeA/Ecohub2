@@ -17,6 +17,7 @@ import ProfilePage from './pages/ProfilePage';
 import PaymentPage from './pages/PaymentPage';
 import EventDetailPage from './pages/EventDetailPage';
 import SolarCalculatorPage from './pages/SolarCalculatorPage';
+import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
               <Route path="/energy/contact" element={<EnergyContactPage />} />
               <Route path="/transport" element={<TransportPage />} />
               <Route path="/waste" element={<WastePage />} />
+              <Route path="/admin" element={<AdminDashboard />} />
             </Routes>
           </main>
           <Footer />
