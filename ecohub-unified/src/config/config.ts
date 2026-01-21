@@ -20,24 +20,21 @@ export const config = {
   auth: {
     // Firebase Authentication
     firebase: {
-      apiKey: getEnv('VITE_FIREBASE_API_KEY', 'AIzaSyCvRKfV2Kq6RcxVBK4KhMsl9w2R1pvxvsI'),
-      authDomain: getEnv('VITE_FIREBASE_AUTH_DOMAIN', 'ecohub-c936c.firebaseapp.com'),
-      projectId: getEnv('VITE_FIREBASE_PROJECT_ID', 'ecohub-c936c'),
-      storageBucket: getEnv('VITE_FIREBASE_STORAGE_BUCKET', 'ecohub-c936c.appspot.com'),
-      messagingSenderId: getEnv('VITE_FIREBASE_MESSAGING_SENDER_ID', '951878074060'),
-      appId: getEnv('VITE_FIREBASE_APP_ID', '1:951878074060:web:91ef9398b297f518fc8c69'),
+      apiKey: 'AIzaSyCvRKfV2Kq6RcxVBK4KhMsl9w2R1pvxvsI',
+      authDomain: 'ecohub-c936c.firebaseapp.com',
+      projectId: 'ecohub-c936c',
       enabled: true,
     },
     // Auth0 Alternative
     auth0: {
-      domain: getEnv('VITE_AUTH0_DOMAIN', 'dev-24kylvqlbsnnr126.us.auth0.com'),
-      clientId: getEnv('VITE_AUTH0_CLIENT_ID', 'uWAMs192KrLSdTEptu0talXLiEeBSh2J'),
+      domain: 'dev-24kylvqlbsnnr126.us.auth0.com',
+      clientId: 'uWAMs192KrLSdTEptu0talXLiEeBSh2J',
       audience: 'https://api.ecohub.com',
       enabled: false,
     },
-    // JWT Configuration (for backend API calls)
+    // JWT Configuration
     jwt: {
-      secret: getEnv('JWT_SECRET', 'ecohub-jwt-secret-key-2026'),
+      secret: 'ecohub-jwt-secret-key-2026',
       expiresIn: '7d',
     },
   },
@@ -66,18 +63,18 @@ export const config = {
 
   // ==================== FORUM & COMMUNITY APIs ====================
   forum: {
-    // Discourse API
+    // Discourse API (Mock)
     discourse: {
       baseUrl: 'https://forum.ecohub.com',
-      apiKey: getEnv('DISCOURSE_API_KEY', ''),
+      apiKey: 'MOCK_Discourse_API_Key_EcoHub2026',
       apiUsername: 'system',
       enabled: true,
     },
-    // Stream Chat for Real-time
+    // Stream Chat for Real-time (Mock)
     streamChat: {
-      apiKey: getEnv('VITE_STREAM_CHAT_API_KEY', 'ueapfn2bgxzp'),
-      apiSecret: getEnv('STREAM_CHAT_API_SECRET', 'pcxxwbhywkk73skyvbum68eatdctpg2nppdjxmvtk36etanv8x7zsadfa7hkn2tk'),
-      enabled: true,
+      apiKey: 'ueapfn2bgxzp',
+      apiSecret: 'pcxxwbhywkk73skyvbum68eatdctpg2nppdjxmvtk36etanv8x7zsadfa7hkn2tk',
+      enabled: false,
     },
   },
 
@@ -85,7 +82,7 @@ export const config = {
   energy: {
     // NREL (National Renewable Energy Laboratory) API
     nrel: {
-      apiKey: getEnv('VITE_NREL_API_KEY', 'DEMO_KEY'),
+      apiKey: 'MOCK_NREL_API_Key_EcoHub2026',
       baseUrl: 'https://developer.nrel.gov/api',
       endpoints: {
         pvWatts: '/pvwatts/v6',
@@ -96,7 +93,7 @@ export const config = {
     },
     // OpenWeatherMap for Solar Irradiance
     openWeather: {
-      apiKey: getEnv('VITE_OPENWEATHER_API_KEY', 'b0763003e31fa4d63b684e4c162bfe0d'),
+      apiKey: 'b0763003e31fa4d63b684e4c162bfe0d',
       baseUrl: 'https://api.openweathermap.org/data/2.5',
       endpoints: {
         solar: '/solar_radiation',
@@ -105,9 +102,9 @@ export const config = {
       },
       enabled: true,
     },
-    // Solcast Solar Forecasting
+    // Solcast Solar Forecasting (Mock)
     solcast: {
-      apiKey: getEnv('SOLCAST_API_KEY', ''),
+      apiKey: 'MOCK_Solcast_API_Key_EcoHub2026',
       baseUrl: 'https://api.solcast.com.au',
       enabled: false,
     },
@@ -117,7 +114,7 @@ export const config = {
   maps: {
     // Google Maps Platform
     google: {
-      apiKey: getEnv('VITE_GOOGLE_MAPS_API_KEY', 'AIzaSyD-e_4ZAS_9BzyGArjA6rsuC4y_QnwxjHs'),
+      apiKey: 'AIzaSyD-e_4ZAS_9BzyGArjA6rsuC4y_QnwxjHs',
       services: {
         maps: true,
         places: true,
@@ -129,13 +126,13 @@ export const config = {
     },
     // Mapbox Alternative
     mapbox: {
-      accessToken: getEnv('VITE_MAPBOX_TOKEN', ''),
+      accessToken: 'MOCK_Mapbox_Token_EcoHub2026',
       style: 'mapbox://styles/mapbox/streets-v11',
       enabled: false,
     },
     // OpenRouteService (Free Alternative)
     openRouteService: {
-      apiKey: getEnv('VITE_ORS_API_KEY', ''),
+      apiKey: 'MOCK_ORS_API_Key_EcoHub2026',
       baseUrl: 'https://api.openrouteservice.org',
       enabled: false,
     },
@@ -301,16 +298,16 @@ export const config = {
 
   // ==================== SECURITY APIs ====================
   security: {
-    // reCAPTCHA v3
+    // reCAPTCHA (disabled for localhost development)
     recaptcha: {
-      siteKey: getEnv('VITE_RECAPTCHA_SITE_KEY', '6LcZ-UcsAAAAABULUof5I363Tidim7r5tI3LsWzP'),
-      secretKey: getEnv('RECAPTCHA_SECRET_KEY', '6LcZ-UcsAAAAAE0VL_FdG31ExAq2n0IT2wfk-L9l'),
-      enabled: true,
+      siteKey: '6LcZ-UcsAAAAABULUof5I363Tidim7r5tI3LsWzP',
+      secretKey: '6LcZ-UcsAAAAAE0VL_FdG31ExAq2n0IT2wfk-L9l',
+      enabled: false,
     },
     // Cloudflare Turnstile (Alternative)
     turnstile: {
-      siteKey: getEnv('VITE_TURNSTILE_SITE_KEY', ''),
-      secretKey: getEnv('TURNSTILE_SECRET_KEY', ''),
+      siteKey: 'MOCK_Turnstile_Site_Key_EcoHub2026',
+      secretKey: 'MOCK_Turnstile_Secret_Key_EcoHub2026',
       enabled: false,
     },
     // Rate Limiting
