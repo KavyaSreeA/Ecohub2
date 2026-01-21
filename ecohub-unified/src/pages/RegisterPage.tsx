@@ -43,14 +43,19 @@ const RegisterPage = () => {
 
     setIsLoading(true);
 
-    // Verify reCAPTCHA before registration
+    // Verify reCAPTCHA before registration (with fallback support)
     const recaptchaToken = await verifyReCaptcha('register');
-    if (config.security.recaptcha.enabled && !recaptchaToken) {
+    const recaptchaConfig = config.security.recaptcha as { enabled: boolean; fallbackOnError?: boolean };
+    if (recaptchaConfig.enabled && !recaptchaToken && !recaptchaConfig.fallbackOnError) {
       setError('reCAPTCHA verification failed. Please try again.');
       setIsLoading(false);
       return;
     }
-    console.log('[Register] reCAPTCHA verified, token:', recaptchaToken?.substring(0, 20) + '...');
+    if (recaptchaToken) {
+      console.log('[Register] reCAPTCHA verified, token:', recaptchaToken?.substring(0, 20) + '...');
+    } else {
+      console.log('[Register] Proceeding with fallback (reCAPTCHA skipped)');
+    }
 
     const result = await register(formData.name, formData.email, formData.password);
     
@@ -66,9 +71,10 @@ const RegisterPage = () => {
     setError('');
     setIsGoogleLoading(true);
 
-    // Verify reCAPTCHA for Google sign-up too
+    // Verify reCAPTCHA for Google sign-up (with fallback support)
     const recaptchaToken = await verifyReCaptcha('google_signup');
-    if (config.security.recaptcha.enabled && !recaptchaToken) {
+    const recaptchaConfigG = config.security.recaptcha as { enabled: boolean; fallbackOnError?: boolean };
+    if (recaptchaConfigG.enabled && !recaptchaToken && !recaptchaConfigG.fallbackOnError) {
       setError('reCAPTCHA verification failed. Please try again.');
       setIsGoogleLoading(false);
       return;

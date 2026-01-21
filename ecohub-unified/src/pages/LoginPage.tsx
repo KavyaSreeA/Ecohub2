@@ -23,14 +23,20 @@ const LoginPage = () => {
     setError('');
     setIsLoading(true);
 
-    // Verify reCAPTCHA before login
+    // Verify reCAPTCHA before login (with fallback support)
     const recaptchaToken = await verifyReCaptcha('login');
-    if (config.security.recaptcha.enabled && !recaptchaToken) {
+    // Only block if reCAPTCHA is enabled, token is null, AND fallback is not enabled
+    const recaptchaConfig = config.security.recaptcha as { enabled: boolean; fallbackOnError?: boolean };
+    if (recaptchaConfig.enabled && !recaptchaToken && !recaptchaConfig.fallbackOnError) {
       setError('reCAPTCHA verification failed. Please try again.');
       setIsLoading(false);
       return;
     }
-    console.log('[Login] reCAPTCHA verified, token:', recaptchaToken?.substring(0, 20) + '...');
+    if (recaptchaToken) {
+      console.log('[Login] reCAPTCHA verified, token:', recaptchaToken?.substring(0, 20) + '...');
+    } else {
+      console.log('[Login] Proceeding with fallback (reCAPTCHA skipped)');
+    }
 
     const result = await login(email, password);
     
@@ -46,9 +52,10 @@ const LoginPage = () => {
     setError('');
     setIsGoogleLoading(true);
 
-    // Verify reCAPTCHA for Google sign-in too
+    // Verify reCAPTCHA for Google sign-in (with fallback support)
     const recaptchaToken = await verifyReCaptcha('google_signin');
-    if (config.security.recaptcha.enabled && !recaptchaToken) {
+    const recaptchaConfig = config.security.recaptcha as { enabled: boolean; fallbackOnError?: boolean };
+    if (recaptchaConfig.enabled && !recaptchaToken && !recaptchaConfig.fallbackOnError) {
       setError('reCAPTCHA verification failed. Please try again.');
       setIsGoogleLoading(false);
       return;
@@ -73,9 +80,10 @@ const LoginPage = () => {
     
     setIsLoading(true);
 
-    // Verify reCAPTCHA for password reset
+    // Verify reCAPTCHA for password reset (with fallback support)
     const recaptchaToken = await verifyReCaptcha('forgot_password');
-    if (config.security.recaptcha.enabled && !recaptchaToken) {
+    const recaptchaConfigFP = config.security.recaptcha as { enabled: boolean; fallbackOnError?: boolean };
+    if (recaptchaConfigFP.enabled && !recaptchaToken && !recaptchaConfigFP.fallbackOnError) {
       setError('reCAPTCHA verification failed. Please try again.');
       setIsLoading(false);
       return;

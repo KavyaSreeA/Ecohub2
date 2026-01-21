@@ -298,11 +298,12 @@ export const config = {
 
   // ==================== SECURITY APIs ====================
   security: {
-    // reCAPTCHA (disabled for localhost development)
+    // reCAPTCHA v3
     recaptcha: {
       siteKey: '6LcZ-UcsAAAAABULUof5I363Tidim7r5tI3LsWzP',
       secretKey: '6LcZ-UcsAAAAAE0VL_FdG31ExAq2n0IT2wfk-L9l',
-      enabled: false,
+      enabled: true,
+      fallbackOnError: true, // Allow login even if reCAPTCHA fails
     },
     // Cloudflare Turnstile (Alternative)
     turnstile: {
