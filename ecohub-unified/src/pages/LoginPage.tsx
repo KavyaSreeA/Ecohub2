@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Globe, Shield, ShieldCheck } from 'lucide-react';
@@ -6,13 +6,35 @@ import { useAuth } from '../context/AuthContext';
 import { useReCaptcha } from '../hooks/useReCaptcha';
 import { config } from '../config/config';
 
+type LoginPageProps = {
+  title?: string;
+  subtitle?: string;
+  postLoginRedirect?: string;
+  showRegisterLink?: boolean;
+  announcementText?: string;
+  announcementTone?: 'info' | 'warning' | 'success';
+};
+
 // Admin credentials (in real app, this should be server-side)
 const ADMIN_CREDENTIALS = {
   email: 'admin@ecohub.com',
-  password: 'admin123'
+  password: 'admin123',
 };
 
-const LoginPage = () => {
+const toneClasses: Record<NonNullable<LoginPageProps['announcementTone']>, string> = {
+  info: 'bg-blue-50 border-blue-200 text-blue-700',
+  warning: 'bg-amber-50 border-amber-200 text-amber-700',
+  success: 'bg-green-50 border-green-200 text-green-700',
+};
+
+const LoginPage = ({
+  title = 'Sign in to your account',
+  subtitle = 'Welcome back! Please enter your details.',
+  postLoginRedirect = '/dashboard',
+  showRegisterLink = true,
+  announcementText,
+  announcementTone = 'info',
+}: LoginPageProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -24,6 +46,9 @@ const LoginPage = () => {
   const { login, loginWithGoogle, forgotPassword } = useAuth();
   const navigate = useNavigate();
   const { verifyReCaptcha, isReady } = useReCaptcha();
+  const announcementStyles = useMemo(() => toneClasses[announcementTone], [announcementTone]);
+  const pageTitle = isAdminLogin ? 'Admin Sign In' : title;
+  const pageSubtitle = isAdminLogin ? 'Enter your admin credentials.' : subtitle;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,7 +85,7 @@ const LoginPage = () => {
     const result = await login(email, password);
     
     if (result.success) {
-      navigate('/dashboard');
+      navigate(postLoginRedirect);
     } else {
       setError(result.message);
     }
@@ -83,7 +108,7 @@ const LoginPage = () => {
     const result = await loginWithGoogle();
     
     if (result.success) {
-      navigate('/dashboard');
+      navigate(postLoginRedirect);
     } else {
       setError(result.message);
     }
@@ -154,6 +179,12 @@ const LoginPage = () => {
             </div>
             <span className="text-2xl font-serif font-semibold text-charcoal">EcoHub</span>
           </Link>
+
+          {announcementText && (
+            <div className={`${announcementStyles} border px-4 py-3 rounded-xl text-sm mb-6`}>
+              {announcementText}
+            </div>
+          )}
 
           {showForgotPassword ? (
             // Forgot Password Form
@@ -231,10 +262,10 @@ const LoginPage = () => {
             // Login Form
             <>
               <h1 className="font-serif text-3xl font-semibold text-charcoal mb-2">
-                {isAdminLogin ? 'Admin Sign In' : 'Sign in to your account'}
+                {pageTitle}
               </h1>
               <p className="text-gray-500 mb-8">
-                {isAdminLogin ? 'Enter your admin credentials.' : 'Welcome back! Please enter your details.'}
+                {pageSubtitle}
               </p>
 
               {/* Admin Login Toggle */}
@@ -373,12 +404,14 @@ const LoginPage = () => {
                 )}
               </form>
 
-              <p className="mt-8 text-center text-gray-500">
-                Don't have an account?{' '}
-                <Link to="/register" className="text-primary-600 hover:text-primary-700 font-medium">
-                  Sign up for free
-                </Link>
-              </p>
+              {showRegisterLink && (
+                <p className="mt-8 text-center text-gray-500">
+                  Don't have an account?{' '}
+                  <Link to="/register" className="text-primary-600 hover:text-primary-700 font-medium">
+                    Sign up for free
+                  </Link>
+                </p>
+              )}
             </>
           )}
         </motion.div>

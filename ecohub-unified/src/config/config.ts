@@ -114,7 +114,7 @@ export const config = {
   maps: {
     // Google Maps Platform
     google: {
-      apiKey: 'AIzaSyD-e_4ZAS_9BzyGArjA6rsuC4y_QnwxjHs',
+      apiKey: getEnv('VITE_GOOGLE_MAPS_API_KEY', ''),
       services: {
         maps: true,
         places: true,
@@ -126,13 +126,13 @@ export const config = {
     },
     // Mapbox Alternative
     mapbox: {
-      accessToken: 'MOCK_Mapbox_Token_EcoHub2026',
+      accessToken: getEnv('VITE_MAPBOX_TOKEN', ''),
       style: 'mapbox://styles/mapbox/streets-v11',
       enabled: false,
     },
     // OpenRouteService (Free Alternative)
     openRouteService: {
-      apiKey: 'MOCK_ORS_API_Key_EcoHub2026',
+      apiKey: getEnv('VITE_ORS_API_KEY', ''),
       baseUrl: 'https://api.openrouteservice.org',
       enabled: false,
     },
@@ -300,15 +300,15 @@ export const config = {
   security: {
     // reCAPTCHA v3
     recaptcha: {
-      siteKey: '6LcZ-UcsAAAAABULUof5I363Tidim7r5tI3LsWzP',
-      secretKey: '6LcZ-UcsAAAAAE0VL_FdG31ExAq2n0IT2wfk-L9l',
+      siteKey: getEnv('VITE_RECAPTCHA_SITE_KEY', ''),
+      secretKey: getEnv('RECAPTCHA_SECRET_KEY', ''),
       enabled: true,
       fallbackOnError: true, // Allow login even if reCAPTCHA fails
     },
     // Cloudflare Turnstile (Alternative)
     turnstile: {
-      siteKey: 'MOCK_Turnstile_Site_Key_EcoHub2026',
-      secretKey: 'MOCK_Turnstile_Secret_Key_EcoHub2026',
+      siteKey: getEnv('VITE_TURNSTILE_SITE_KEY', ''),
+      secretKey: getEnv('TURNSTILE_SECRET_KEY', ''),
       enabled: false,
     },
     // Rate Limiting
